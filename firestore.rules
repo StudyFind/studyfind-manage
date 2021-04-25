@@ -1,0 +1,120 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+  	match /researchers/{researcherID} {
+    	allow read, delete: if researcherID == request.auth.uid
+      allow create: if researcherID == request.auth.uid && request.resource.data.name != null
+      allow update: if researcherID == request.auth.uid && request.resource.data.name == resource.data.name
+
+      match /notifications/{notificationID} {
+      	allow read: if researcherID == request.auth.uid
+        allow update: if researcherID == request.auth.uid
+        	&& resource.data.title == request.resource.data.title
+          && resource.data.description == request.resource.data.description
+          && resource.data.time == request.resource.data.time
+          && resource.data.type == request.resource.data.type
+          && resource.data.read == false && request.resource.data.read == true
+      }
+    }
+
+    match /participants/{participantID} {
+    	allow read, delete: if participantID == request.auth.uid
+      allow create: if participantID == request.auth.uid && request.resource.data.name != null
+      allow update: if participantID == request.auth.uid && request.resource.data.name == resource.data.name
+
+
+      match /notifications/{notificationID} {
+      	allow read: if participantID == request.auth.uid
+        allow update: if participantID == request.auth.uid
+        	&& resource.data.title == request.resource.data.title
+          && resource.data.description == request.resource.data.description
+          && resource.data.time == request.resource.data.time
+          && resource.data.type == request.resource.data.type
+          && resource.data.read == false && request.resource.data.read == true
+      }
+    }
+
+    match /studies/{studyID} {
+      allow read, update, delete: if resource.data.researcher.id == request.auth.uid
+      allow read: if request.auth != null
+
+      match /surveys/{surveyID} {
+        	allow read, write: if true
+      }
+      // allow read if custom claim is participant
+
+      match /participants/{participantID} {
+        allow read: if participantID == request.auth.uid
+        allow create: if participantID == request.auth.uid && request.resource.data.status == "interested"
+        allow read, update, delete: if getStudyData(studyID).researcher.id == request.auth.uid
+
+
+        // allow create by participant
+
+
+        match /notes/{noteID} {
+          allow read, write: if getStudyData(studyID).researcher.id == request.auth.uid
+        }
+
+        match /messages/{messageID} {
+          allow read: if getStudyData(studyID).researcher.id == request.auth.uid || participantID == request.auth.uid
+          allow create: if request.resource.data.user == request.auth.uid && (getStudyData(studyID).researcher.id == request.auth.uid || participantID == request.auth.uid)
+          allow update: if resource.data.user != request.auth.uid && (getStudyData(studyID).researcher.id == request.auth.uid || participantID == request.auth.uid) // can update each others' reads
+            && resource.data.user == request.resource.data.user
+            && resource.data.time == request.resource.data.time
+            && resource.data.text == request.resource.data.text
+            && resource.data.read == false && request.resource.data.read == true
+        }
+    	}
+    }
+
+    // match reminders
+    match /reminders/{reminderID} {
+    	allow read: if request.auth.uid == resource.data.participantID || request.auth.uid == getStudyData(resource.data.studyID).researcher.id
+
+      allow update: if (request.auth.uid == resource.data.participantID
+          && resource.data.startDate == request.resource.data.startDate
+          && resource.data.endDate == request.resource.data.endDate
+          && resource.data.times == request.resource.data.times
+          && resource.data.participantID == request.resource.data.participantID
+          && resource.data.title == request.resource.data.title
+          && resource.data.studyID == request.resource.data.studyID
+          && request.resource.data.confirmedByParticipant == true)
+					|| (request.auth.uid == getStudyData(request.resource.data.studyID).researcher.id
+          && resource.data.participantID == request.resource.data.participantID
+          && resource.data.studyID == request.resource.data.studyID)
+          
+      allow create: if request.auth.uid == getStudyData(request.resource.data.studyID).researcher.id
+      allow delete: if request.auth.uid == getStudyData(resource.data.studyID).researcher.id
+    }
+
+    match /meetings/{meetingID} {
+    	allow read: if request.auth.uid == resource.data.participantID || request.auth.uid == getStudyData(resource.data.studyID).researcher.id || request.auth.uid == resource.data.researcherID
+
+      allow update: if (request.auth.uid == resource.data.participantID
+          && resource.data.name == request.resource.data.name
+          && resource.data.link == request.resource.data.link
+          && resource.data.time == request.resource.data.time
+          && resource.data.participantID == request.resource.data.participantID
+          && resource.data.researcherID == request.resource.data.researcherID
+          && resource.data.studyID == request.resource.data.studyID
+          && request.resource.data.confirmedByParticipant == true)
+					|| (request.auth.uid == getStudyData(request.resource.data.studyID).researcher.id
+          && resource.data.participantID == request.resource.data.participantID
+          && resource.data.researcherID == request.resource.data.researcherID
+          && resource.data.studyID == request.resource.data.studyID)
+          
+      allow create: if request.auth.uid == getStudyData(request.resource.data.studyID).researcher.id
+      allow delete: if request.auth.uid == getStudyData(resource.data.studyID).researcher.id
+    }
+
+    match /feedback/{feedbackID} {
+    	allow write: if request.auth != null
+    }
+
+    // fetch a study from firestore
+    function getStudyData(studyID) {
+    	return get(/databases/$(database)/documents/studies/$(studyID)).data
+    }
+  }
+}
