@@ -1,38 +1,42 @@
 const functions = require("firebase-functions");
-const admin = require("firebase-admin");
-admin.initializeApp();
 
-const context = { admin };
+// ======== CLAIMS ======== //
+const setResearcherClaim = require("./src/custom-claims/set-researcher-claim");
+const setParticipantClaim = require("./src/custom-claims/set-participant-claim");
 
-// ***** Http Functions *****
+exports.setResearcherClaim = functions.https.onCall(setResearcherClaim);
+exports.setParticipantClaim = functions.https.onCall(setParticipantClaim);
 
-// note that switch func contains all http functions
-const switchFunc = require("./src/switch-func");
-exports.studies = functions.https.onRequest(switchFunc(context));
-// const makeStudy = require('./src/make-study');
-// exports.makeStudy = functions.https.onRequest(makeStudy(context));
+// ======== STUDIES ======== //
+const createStudy = require("./src/studies/create-study");
+const updateStudy = require("./src/studies/update-study");
+const welcomeAccount = require("./src/studies/welcome-account");
 
-// ***** Cron Functions *****
-// note, these will not work in emulator. Automatic testing is paramount
+exports.createStudy = functions.https.onCall(createStudy);
+exports.updateStudy = functions.https.onCall(updateStudy);
+exports.welcomeAccount = functions.https.onCall(welcomeAccount);
 
-const remindersRunner = require("./src/reminders-runner.js")(context);
-const meetingRunner = require("./src/meeting-runner")(context);
-exports.remindersRunner = functions.pubsub.schedule("*/30 * * * *").onRun(async () => await Promise.allSettled([
-    remindersRunner(),
-    meetingRunner(),
-]));
+// ======== TRIGGERED ======== //
+const onCreateAccount = require("./src/notifications/triggered/on-create-account");
+const onCreateStudy = require("./src/notifications/triggered/on-create-study");
+const onDeleteStudy = require("./src/notifications/triggered/on-delete-study");
+const onNewParticipant = require("./src/notifications/triggered/on-new-participant");
 
-// ***** Cloud Trigger Functions ******
+const researcherRef = functions.firestore.document("researchers/{researcherID}");
+const studyRef = functions.firestore.document("studies/{studyID}");
+const studyParticipantRef = functions.firestore.document(
+  "studies/{studyID}/participants/{participantID}"
+);
 
-const {
-    onCreateStudy, onDeleteStudy,
-    onNewParticipant,
-    onCreateResearcherAccount } = require("./src/notification-triggers.js");
-exports.createStudyNotificationTrigger = functions.firestore.document("studies/{studyID}")
-    .onCreate(onCreateStudy(context));
-exports.deleteStudyNotificationTrigger = functions.firestore.document("studies/{studyID}")
-    .onDelete(onDeleteStudy(context));
-exports.newParticipantNotificationTrigger = functions.firestore.document("studies/{studyID}/participants/{participantID}")
-    .onCreate(onNewParticipant(context));
-exports.newResearcherAccountNotificationTrigger = functions.firestore.document("researchers/{researcherID}")
-    .onCreate(onCreateResearcherAccount(context));
+exports.onCreateAccount = researcherRef.onCreate(onCreateAccount);
+exports.onCreateStudy = studyRef.onCreate(onCreateStudy);
+exports.onDeleteStudy = studyRef.onDelete(onDeleteStudy);
+exports.onNewParticipant = studyParticipantRef.onCreate(onNewParticipant);
+
+// ======== SCHEDULED ======== //
+const remindersRunner = require("./src/notifications/scheduled/reminders");
+const meetingsRunner = require("./src/notifications/scheduled/meetings");
+
+exports.remindersRunner = functions.pubsub
+  .schedule("*/30 * * * *")
+  .onRun(() => Promise.allSettled([remindersRunner(), meetingsRunner()]));
