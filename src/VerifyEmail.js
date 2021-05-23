@@ -8,11 +8,13 @@ function VerifyEmail({ code }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    auth
-      .applyActionCode(code || "")
-      .then(() => setSuccess(true))
-      .catch(() => setSuccess(false))
-      .finally(() => setLoading(false));
+    if (code) {
+      auth
+        .applyActionCode(code)
+        .then(() => setSuccess(true))
+        .catch(() => setSuccess(false))
+        .finally(() => setLoading(false));
+    }
   }, [code]);
 
   if (loading) {

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Flex } from "@chakra-ui/react";
 
 import ResetPassword from "./ResetPassword";
-import VerifyAccount from "./VerifyAccount";
+import VerifyEmail from "./VerifyEmail";
 
 function App() {
   const [mode, setMode] = useState("");
@@ -17,7 +17,7 @@ function App() {
 
   return (
     <Flex h="100vh" w="100vw" justify="center" align="center">
-      {mode === "resetPassword" ? <ResetPassword code={code} /> : <VerifyAccount code={code} />}
+      {mode === "resetPassword" ? <ResetPassword code={code} /> : <VerifyEmail code={code} />}
     </Flex>
   );
 }
