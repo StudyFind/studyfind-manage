@@ -39,6 +39,7 @@ function ResetPassword({ code }) {
 
       if (error) {
         setErrors(error);
+        return;
       }
 
       await auth.verifyPasswordResetCode(code);
@@ -47,6 +48,7 @@ function ResetPassword({ code }) {
       setSuccess(true);
     } catch (e) {
       setSuccess(false);
+      setErrors({ password: "The password reset link has expired" });
     } finally {
       setLoading(false);
     }

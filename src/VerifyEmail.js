@@ -14,6 +14,9 @@ function VerifyEmail({ code }) {
         .then(() => setSuccess(true))
         .catch(() => setSuccess(false))
         .finally(() => setLoading(false));
+    } else {
+      setSuccess(false);
+      setLoading(false);
     }
   }, [code]);
 
