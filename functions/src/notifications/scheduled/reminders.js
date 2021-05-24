@@ -1,9 +1,12 @@
 const admin = require("firebase-admin");
-const getOffset = require("./utils/offset-time");
-const sendEmail = require("../src/notifications/send-email");
+// const sendEmail = require("../src/notifications/send-email");
 const moment = require("moment");
 require("moment-timezone");
 const firestore = admin.firestore();
+
+const getOffset = (time) => {
+  return Math.floor((time % 604800000) / 1800000) * 1800000;
+};
 
 const forEachTimezone = async (fn) => {
   const timezones = moment.tz.zonesForCountry("US", true);

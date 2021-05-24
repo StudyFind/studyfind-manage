@@ -1,5 +1,5 @@
 const admin = require("firebase-admin");
-const sendEmail = require("../src/notifications/send-email");
+// const sendEmail = require("../src/notifications/send-email");
 const firestore = admin.firestore();
 
 module.exports = async () => {

@@ -14,7 +14,7 @@ const assertOwnership = (researcherID, userID) => {
   }
 };
 
-const updateStudy = async (data, context) => {
+module.exports = async (data, context) => {
   try {
     const { uid } = context.auth;
     const { nctID } = data;
@@ -33,5 +33,3 @@ const updateStudy = async (data, context) => {
     return { error: e.message };
   }
 };
-
-export default updateStudy;

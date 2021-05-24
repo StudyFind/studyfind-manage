@@ -21,12 +21,13 @@ const checkOwnership = (contactEmail, userEmail) => {
   }
 };
 
-const createStudy = async (data, context) => {
+module.exports = async (data, context) => {
   try {
-    const { uid, email } = context.auth;
+    const { uid, email, emailVerified } = context.auth;
     const { nctID } = data;
 
     if (!nctID) throw Error("Parameter nctID needs to be defined");
+    if (!emailVerified) throw Error("User email is not verified");
 
     ensureNewStudy();
 
@@ -41,5 +42,3 @@ const createStudy = async (data, context) => {
     return { error: e.message };
   }
 };
-
-export default createStudy;

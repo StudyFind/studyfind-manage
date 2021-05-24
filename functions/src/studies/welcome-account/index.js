@@ -1,10 +1,10 @@
 const admin = require("firebase-admin");
-const fetchStudies = require("./utils/fetch-studies-by-email");
-const generateQuestions = require("../src/create-study/generate-questions");
-const cleanStudy = require("../src/create-study/clean-study");
+const fetchStudies = require("./fetch-studies");
+const generateQuestions = require("../create-study/generate-questions");
+const cleanStudy = require("../create-study/clean-study");
 const firestore = admin.firestore();
 
-const welcomeAccount = async (_, context) => {
+module.exports = async (_, context) => {
   try {
     const { uid, email } = context.auth;
 
@@ -24,5 +24,3 @@ const welcomeAccount = async (_, context) => {
     return { error };
   }
 };
-
-export default welcomeAccount;

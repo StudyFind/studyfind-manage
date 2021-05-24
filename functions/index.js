@@ -1,4 +1,6 @@
 const functions = require("firebase-functions");
+const admin = require("firebase-admin");
+admin.initializeApp();
 
 // ======== CLAIMS ======== //
 const setResearcherClaim = require("./src/custom-claims/set-researcher-claim");
