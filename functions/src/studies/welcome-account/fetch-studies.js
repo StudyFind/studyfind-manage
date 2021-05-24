@@ -5,7 +5,7 @@ module.exports = async (email) => {
   const ENDPOINT = `https://flask-fire-27eclhhcra-uc.a.run.app/queryStudiesByEmail?email=${email}`;
   const { data } = await axios.get(ENDPOINT);
 
-  if (data?.status === "failure") {
+  if (!data || data.status === "failure") {
     throw Error("No matching studies could be found");
   }
 
