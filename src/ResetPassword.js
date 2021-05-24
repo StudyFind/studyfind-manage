@@ -38,7 +38,7 @@ function ResetPassword({ code }) {
       const error = check(inputs.password);
 
       if (error) {
-        setErrors(error);
+        setErrors({ password: error });
         return;
       }
 
