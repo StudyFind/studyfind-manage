@@ -35,6 +35,8 @@ function ResetPassword({ code }) {
 
   const handleSubmit = async () => {
     try {
+      setLoading(true);
+
       const error = check(inputs.password);
 
       if (error) {
