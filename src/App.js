@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 
 import { Flex } from "@chakra-ui/react";
 
@@ -6,14 +6,9 @@ import ResetPassword from "./ResetPassword";
 import VerifyEmail from "./VerifyEmail";
 
 function App() {
-  const [mode, setMode] = useState("");
-  const [code, setCode] = useState("");
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    setMode(params.get("mode"));
-    setCode(params.get("oobCode"));
-  }, []);
+  const params = new URLSearchParams(window.location.search);
+  const mode = params.get("mode");
+  const code = params.get("oobCode");
 
   return (
     <Flex h="100vh" w="100vw" justify="center" align="center">
