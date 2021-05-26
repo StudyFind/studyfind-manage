@@ -15,21 +15,18 @@ const assertOwnership = (researcherID, userID) => {
 };
 
 module.exports = async (data, context) => {
-  try {
-    const { uid } = context.auth;
-    const { nctID } = data;
+  const { uid } = context.auth;
+  const { nctID } = data;
 
-    if (!nctID) throw Error("Parameter nctID needs to be defined");
+  if (!uid) throw Error("User not logged in");
+  if (!nctID) throw Error("Parameter nctID needs to be defined");
 
-    const fetchedStudy = await fetchStudy(nctID);
-    const currentStudy = await getStudy(nctID);
+  const fetchedStudy = await fetchStudy(nctID);
+  const currentStudy = await getStudy(nctID);
 
-    assertOwnership(currentStudy.researcher.id, uid);
+  assertOwnership(currentStudy.researcher.id, uid);
 
-    const updatedFields = mergeStudy(fetchedStudy);
+  const updatedFields = mergeStudy(fetchedStudy);
 
-    return await firestore.collection("studies").doc(nctID).update(updatedFields);
-  } catch (e) {
-    return { error: e.message };
-  }
+  return await firestore.collection("studies").doc(nctID).update(updatedFields);
 };

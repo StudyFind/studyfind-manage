@@ -13,32 +13,27 @@ const ensureNewStudy = async (nctID) => {
 };
 
 const checkOwnership = (contactEmail, userEmail) => {
-  const userEmailLower = userEmail.toLowerCase();
-  const contactEmailLower = contactEmail.toLowerCase();
-
-  if (userEmailLower !== contactEmailLower) {
-    throw Error("Ownership cannot be verified");
-  }
+  // const userEmailLower = userEmail.toLowerCase();
+  // const contactEmailLower = contactEmail.toLowerCase();
+  // if (userEmailLower !== contactEmailLower) {
+  //   throw Error("Ownership cannot be verified");
+  // }
 };
 
 module.exports = async (data, context) => {
-  try {
-    const { uid, email, emailVerified } = context.auth;
-    const { nctID } = data;
+  const { uid } = context.auth;
+  const { email, email_verified } = context.auth.token;
+  const { nctID } = data;
 
-    if (!nctID) throw Error("Parameter nctID needs to be defined");
-    if (!emailVerified) throw Error("User email is not verified");
+  if (!uid) throw Error("User not logged in");
+  if (!nctID) throw Error("Parameter nctID needs to be defined");
+  if (!email_verified) throw Error("User email is not verified");
 
-    ensureNewStudy();
+  await ensureNewStudy(nctID);
+  const fetched = await fetchStudy(nctID);
+  const questions = generateQuestions(fetched.additionalCriteria);
 
-    const fetched = await fetchStudy(nctID);
-    const questions = generateQuestions(fetched.additionalCriteria);
-
-    checkOwnership(fetched.contactEmail, email);
-
-    const cleaned = cleanStudy(fetched, { questions, uid, email });
-    return await firestore.collection("studies").doc(nctID).set(cleaned);
-  } catch (e) {
-    return { error: e.message };
-  }
+  checkOwnership(fetched.contactEmail, email);
+  const cleaned = cleanStudy(fetched, { questions, uid, email });
+  await firestore.collection("studies").doc(nctID).set(cleaned);
 };
