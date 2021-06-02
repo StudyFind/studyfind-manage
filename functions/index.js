@@ -25,14 +25,21 @@ exports.welcomeAccount = functions.https.onCall(welcomeAccount);
 // =========================== //
 // ======== TRIGGERED ======== //
 // =========================== //
-const onCreateAccount = require("./src/notifications/triggered/on-create-account");
+const onCreateResearcherAccount = require("./src/notifications/triggered/on-create-researcher-account");
+const onCreateParticipantAccount = require("./src/notifications/triggered/on-create-participant-account");
+
 const onCreateStudy = require("./src/notifications/triggered/on-create-study");
 const onDeleteStudy = require("./src/notifications/triggered/on-delete-study");
 const onNewParticipant = require("./src/notifications/triggered/on-new-participant");
 
-exports.onCreateAccount = functions.firestore
+exports.onResearcherCreateAccount = functions.firestore
   .document("researchers/{researcherID}")
-  .onCreate(onCreateAccount);
+  .onCreate(onCreateResearcherAccount);
+
+exports.onParticipantCreateAccount = functions.firestore
+  .document("participants/{participantID}")
+  .onCreate(onCreateParticipantAccount);
+
 exports.onCreateStudy = functions.firestore.document("studies/{studyID}").onCreate(onCreateStudy);
 exports.onDeleteStudy = functions.firestore.document("studies/{studyID}").onDelete(onDeleteStudy);
 exports.onNewParticipant = functions.firestore
