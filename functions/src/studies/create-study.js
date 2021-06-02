@@ -1,8 +1,8 @@
-const admin = require("firebase-admin");
-const cleanStudy = require("./clean-study");
-const fetchStudy = require("./fetch-study");
-const generateQuestions = require("./generate-questions");
-const firestore = admin.firestore();
+const { firestore } = require("admin");
+
+const cleanStudy = require("./__utils__/clean-study");
+const fetchStudy = require("./__utils__/fetch-study");
+const generateQuestions = require("./__utils__/generate-questions");
 
 const ensureNewStudy = async (nctID) => {
   const study = await firestore.collection("studies").doc(nctID);
@@ -13,11 +13,12 @@ const ensureNewStudy = async (nctID) => {
 };
 
 const checkOwnership = (contactEmail, userEmail) => {
-  // const userEmailLower = userEmail.toLowerCase();
-  // const contactEmailLower = contactEmail.toLowerCase();
-  // if (userEmailLower !== contactEmailLower) {
-  //   throw Error("Ownership cannot be verified");
-  // }
+  const userEmailLower = userEmail.toLowerCase();
+  const contactEmailLower = contactEmail.toLowerCase();
+
+  if (userEmailLower !== contactEmailLower) {
+    throw Error("Ownership cannot be verified");
+  }
 };
 
 module.exports = async (data, context) => {
