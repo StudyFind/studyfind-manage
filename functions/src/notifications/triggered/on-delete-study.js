@@ -1,23 +1,20 @@
-const admin = require("firebase-admin");
-const sendEmail = require("../send-email");
+const { firestore } = require("admin");
+const { getDocument } = require("utils");
+const { DELETE_STUDY } = require("../__utils__/notification-codes");
 
-module.exports = async (snapshot, context) => {
-  const firestore = admin.firestore();
-  const study = snapshot.data();
+module.exports = async (snapshot) => {
+  const studyID = snapshot.id;
+  const researcherID = snapshot.get("researcher.id");
 
-  // TODO: check if this setting is enabled
-  // await sendEmail(firestore, admin.auth(), study.researcher.id, {
-  //   subject: note.title,
-  //   html: note.description,
-  // });
+  const researcher = await getDocument(firestore.collection("researchers").doc(researcherID));
+  const preference = researcher.notifications.categories.studies;
 
-  return firestore
-    .collection("researchers")
-    .doc(study.researcher.id)
-    .collection("notifications")
-    .add({
-      type: "deleteStudy",
+  return (
+    preference &&
+    firestore.collection("researchers").doc(researcherID).collection("notifications").add({
       time: Date.now(),
-      meta: { studyID: snapshot.id },
-    });
+      code: DELETE_STUDY,
+      meta: { studyID },
+    })
+  );
 };
