@@ -1,26 +1,21 @@
-const admin = require("firebase-admin");
-const fetchStudies = require("./fetch-studies");
-const generateQuestions = require("../create-study/generate-questions");
-const cleanStudy = require("../create-study/clean-study");
-const firestore = admin.firestore();
+const { firestore } = require("admin");
+
+const cleanStudy = require("__utils__/clean-study");
+const fetchStudies = require("__utils__/fetch-studies");
+const generateQuestions = require("__utils__/generate-questions");
 
 module.exports = async (_, context) => {
-  try {
-    const { uid, email } = context.auth;
+  const { uid } = context.auth;
+  const { email } = context.auth.token;
 
-    const fetchedStudies = await fetchStudies(email);
+  const fetchedStudies = await fetchStudies(email);
 
-    const cleanedStudies = fetchedStudies.map((study) => {
-      const studyWithQuestions = generateQuestions(study);
-      return cleanStudy({ ...studyWithQuestions, uid });
-    });
+  const cleanedStudies = fetchedStudies.map((study) => {
+    const questions = generateQuestions(study);
+    return [study.nctID, cleanStudy(study, { uid, email, questions })];
+  });
 
-    await Promise.all(
-      cleanedStudies.map((study) => firestore.collection("studies").doc(study.nctID).set(study))
-    );
-
-    return { studies: cleanedStudies };
-  } catch (error) {
-    return { error };
-  }
+  await Promise.all(
+    cleanedStudies.map(([id, study]) => firestore.collection("studies").doc(id).set(study))
+  );
 };
