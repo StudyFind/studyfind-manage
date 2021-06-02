@@ -258,6 +258,7 @@ service cloud.firestore {
     function studyParticipantCreate(participantID) {
       // only participants can add themselves to a study
       return isAuthenticatedAs(participantID)
+        && isVerified()
         && assertExactFields(["fakename", "timezone", "responses", "status"])
         && request.resource.data.fakename is string
         && request.resource.data.fakename.size() == 8
