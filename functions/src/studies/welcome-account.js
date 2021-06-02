@@ -10,9 +10,9 @@ module.exports = async (_, context) => {
 
   const fetchedStudies = await fetchStudies(email);
 
-  const cleanedStudies = fetchedStudies.map((study) => {
-    const questions = generateQuestions(study);
-    return [study.nctID, cleanStudy(study, { uid, email, questions })];
+  const cleanedStudies = fetchedStudies.map((fetched) => {
+    const questions = generateQuestions(fetched.additionalCriteria);
+    return [fetched.nctID, cleanStudy(fetched, { uid, email, questions })];
   });
 
   await Promise.all(
