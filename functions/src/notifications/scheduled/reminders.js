@@ -1,11 +1,14 @@
-const admin = require("firebase-admin");
-// const sendEmail = require("../src/notifications/send-email");
-const moment = require("moment");
-require("moment-timezone");
-const firestore = admin.firestore();
+const moment = require("moment-timezone");
 
-const getOffset = (time) => {
-  return Math.floor((time % 604800000) / 1800000) * 1800000;
+const { firestore } = require("admin");
+const { getDocument, getCollection } = require("utils");
+
+const { REMINDER } = require("../__utils__/notification-codes");
+
+const getWeeklyOffset = (time) => {
+  const MILLIS_IN_WEEK = 604800000;
+  const MILLIS_IN_30_MINS = 1800000;
+  return Math.floor((time % MILLIS_IN_WEEK) / MILLIS_IN_30_MINS) * MILLIS_IN_30_MINS;
 };
 
 const forEachTimezone = async (fn) => {
@@ -22,55 +25,28 @@ const forEachTimezone = async (fn) => {
 };
 
 module.exports = async () => {
-  // for each timezone offset...
   return forEachTimezone(async (timezoneTime, timezoneDate, timezoneName) => {
-    // find all planned reminders
-
-    const remindersSnapshot = await firestore
-      .collection("reminders")
-      .where("times", "array-contains", getOffset(timezoneTime))
-      .where("endDate", ">=", timezoneDate)
-      .where("startDate", "<=", timezoneDate)
-      .get();
-
-    const reminders = [];
-
-    remindersSnapshot.forEach((r) => reminders.push(r));
-
-    if (!reminders.length) {
-      return [];
-    }
+    const reminders = await getCollection(
+      firestore
+        .collection("reminders")
+        .where("times", "array-contains", getWeeklyOffset(timezoneTime))
+        .where("endDate", ">=", timezoneDate)
+        .where("startDate", "<=", timezoneDate)
+    );
 
     return Promise.allSettled(
       reminders.map(async (reminder) => {
-        const reminderTitle = reminder.get("title");
-        const participantID = reminder.get("participantID");
+        const participantRef = firestore.collection("participants").doc(reminder.participantID);
+        const participant = await getDocument(participantRef);
 
-        const participantSnapshot = await firestore
-          .collection("participants")
-          .doc(participantID)
-          .get();
-
-        const participantTimezone = participantSnapshot.get("timezone");
-
-        if (participantTimezone !== timezoneName) {
-          return null;
-        }
-
-        return Promise.all([
-          firestore
-            .collection("participants")
-            .doc(participantID)
-            .collection("notifications")
-            .add({
-              type: "upcomingReminder",
-              time: Date.now(),
-              meta: { title: reminderTitle },
-            }),
-          // TODO: send emails to both participant depending on their notification preference
-          // sendEmail(firestore, auth, researcher.id, email),
-          // sendEmail(firestore, auth, m.participantID, email, false),
-        ]);
+        return (
+          participant.timezone === timezoneName &&
+          participantRef.collection("notifications").add({
+            time: Date.now(),
+            code: REMINDER,
+            meta: { title: reminder.title },
+          })
+        );
       })
     );
   });

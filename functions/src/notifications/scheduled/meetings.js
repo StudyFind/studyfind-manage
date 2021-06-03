@@ -1,64 +1,70 @@
-const admin = require("firebase-admin");
-// const sendEmail = require("../src/notifications/send-email");
-const firestore = admin.firestore();
+const moment = require("moment-timezone");
 
+const { firestore } = require("admin");
+const { getDocument, getCollection } = require("utils");
+
+const { MEETING } = require("../__utils__/notification-codes");
+
+const getCurrentTimeRoundedTo30Minutes = () => {
+  const MILLIS_UTC_NOW = Date.now();
+  const MILLIS_IN_30_MINS = 1800000;
+  return MILLIS_IN_30_MINS + Math.floor(MILLIS_UTC_NOW / MILLIS_IN_30_MINS) * MILLIS_IN_30_MINS;
+};
+
+const add30Minutes = (time) => {
+  const MILLIS_IN_30_MINS = 1800000;
+  return MILLIS_IN_30_MINS + time;
+};
+
+// sends notifications 30 minutes before meeting
 module.exports = async () => {
-  const roundedTime = Math.floor((Date.now() % 604800000) / 1800000) * 1800000;
-  const meetings = [];
+  const roundedTime = add30Minutes(getCurrentTimeRoundedTo30Minutes());
 
-  const meetingsSnapshot = await firestore
-    .collection("meetings")
-    .where("time", "==", roundedTime)
-    .get();
-
-  meetingsSnapshot.forEach((m) => meetings.push(m));
-
-  if (!meetings.length) {
-    return [];
-  }
+  const meetingsRef = firestore.collection("meetings").where("time", "==", roundedTime);
+  const meetings = await getCollection(meetingsRef);
 
   return Promise.allSettled(
     meetings.map(async (meeting) => {
-      const { studyID, researcherID, participantID } = meeting.data();
+      const { studyID, researcherID, participantID } = meeting;
 
-      const [researcherSnapshot, participantSnapshot] = Promise.all([
-        await firestore.collection("researchers").doc(researcherID).get(),
-        await firestore.collection("participants").doc(participantID).get(),
+      const researcherRef = firestore.collection("researchers").doc(researcherID);
+      const participantRef = firestore.collection("participants").doc(participantID);
+      const studyParticipantRef = firestore
+        .collection("studies")
+        .doc(studyID)
+        .participants(participantID);
+
+      const [researcher, participant, studyParticipant] = await Promise.all([
+        getDocument(researcherRef),
+        getDocument(participantRef),
+        getDocument(studyParticipantRef),
       ]);
 
-      if (!researcherSnapshot.exists) {
-        throw Error(`Referenced researcher ${researcherID} does not exist`);
-      }
+      const participantFakename = studyParticipant.fakename;
 
-      if (!participantSnapshot.exists) {
-        throw Error(`Referenced participant ${participantID} does not exist`);
-      }
+      if (!researcher) throw Error(`Referenced researcher ${researcherID} does not exist`);
+      if (!participant) throw Error(`Referenced participant ${participantID} does not exist`);
 
-      const researcherName = researcherSnapshot.get("name");
-      const participantName = participantSnapshot.get("name");
+      const participantTime = moment(roundedTime).tz(participant.timezone).format("h:mma");
+      const researcherTime = moment(roundedTime).tz(researcher.timezone).format("h:mma");
 
-      return Promise.all([
-        firestore.collection("researchers").doc(researcherID).collection("notifications").add({
-          type: "upcomingMeeting",
-          time: Date.now(),
-          meta: {
-            studyID,
-            participantID,
-            participantName,
-          },
-        }),
-        firestore.collection("participants").doc(participantID).collection("notifications").add({
-          type: "upcomingMeeting",
-          time: Date.now(),
-          meta: {
-            studyID,
-            researcherName,
-          },
-        }),
-        // TODO: send emails to both researcher and participant depending on their notification preference
-        // sendEmail(firestore, auth, researcher.id, email),
-        // sendEmail(firestore, auth, m.participantID, email, false),
-      ]);
+      const researcherNotification = {
+        title: `Meeting ${meeting.title} at ${researcherTime}`,
+        body: `You have a upcoming meeting with participant ${participantFakename} for study ${studyID} in 30 minutes`,
+        code: MEETING,
+        time: Date.now(),
+        meta: { participantID, meetingID: meeting.id },
+      };
+
+      const participantNotification = {
+        title: `Meeting ${meeting.title} at ${participantTime}`,
+        body: `You have a upcoming meeting with researcher ${researcher.name} for study ${studyID} in 30 minutes`,
+        code: MEETING,
+        time: Date.now(),
+        meta: { participantID, meetingID: meeting.id },
+      };
+
+      await Promise.all([sendResearcherNotification(), sendParticipantNotification()]);
     })
   );
 };

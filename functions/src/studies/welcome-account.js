@@ -1,8 +1,8 @@
 const { firestore } = require("admin");
 
-const cleanStudy = require("__utils__/clean-study");
-const fetchStudies = require("__utils__/fetch-studies");
-const generateQuestions = require("__utils__/generate-questions");
+const cleanStudy = require("./__utils__/clean-study");
+const fetchStudies = require("./__utils__/fetch-studies");
+const generateQuestions = require("./__utils__/generate-questions");
 
 module.exports = async (_, context) => {
   const { uid } = context.auth;

@@ -1,9 +1,9 @@
 const { firestore } = require("admin");
 const { getDocument } = require("utils");
 
-const cleanStudy = require("__utils__/clean-study");
-const fetchStudy = require("__utils__/fetch-study");
-const generateQuestions = require("__utils__/generate-questions");
+const cleanStudy = require("./__utils__/clean-study");
+const fetchStudy = require("./__utils__/fetch-study");
+const generateQuestions = require("./__utils__/generate-questions");
 
 const ensureNewStudy = async (nctID) => {
   const study = await getDocument(firestore.collection("studies").doc(nctID));

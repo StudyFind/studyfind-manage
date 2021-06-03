@@ -1,8 +1,8 @@
 const { firestore } = require("admin");
 const { getDocument } = require("utils");
 
-const mergeStudy = require("__utils__/merge-study");
-const fetchStudy = require("__utils__/fetch-study");
+const mergeStudy = require("./__utils__/merge-study");
+const fetchStudy = require("./__utils__/fetch-study");
 
 const assertOwnership = (researcherID, userID) => {
   if (researcherID !== userID) {
