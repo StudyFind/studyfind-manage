@@ -1,4 +1,5 @@
 const axios = require("axios");
+const { throwError } = require("utils");
 
 // fetches study by nctID using flask API
 module.exports = async (nctID) => {
@@ -6,7 +7,7 @@ module.exports = async (nctID) => {
   const { data } = await axios.get(ENDPOINT);
 
   if (!data || data.status === "failure") {
-    throw Error("Entered ID does not exist");
+    throwError("invalid-argument", "Entered ID does not exist");
   }
 
   return data.study;

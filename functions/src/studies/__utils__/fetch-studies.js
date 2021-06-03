@@ -1,4 +1,5 @@
 const axios = require("axios");
+const { throwError } = require("utils");
 
 // fetches studies by email using flask API
 module.exports = async (email) => {
@@ -6,7 +7,7 @@ module.exports = async (email) => {
   const { data } = await axios.get(ENDPOINT);
 
   if (!data || data.status === "failure") {
-    throw Error("No matching studies could be found");
+    throwError("internal", "No matching studies could be found");
   }
 
   return data.studies;

@@ -1,5 +1,5 @@
 const { firestore } = require("admin");
-const { getDocument } = require("utils");
+const { throwError, getDocument } = require("utils");
 
 const cleanStudy = require("./__utils__/clean-study");
 const fetchStudy = require("./__utils__/fetch-study");
@@ -9,7 +9,7 @@ const ensureNewStudy = async (nctID) => {
   const study = await getDocument(firestore.collection("studies").doc(nctID));
 
   if (study && study.published) {
-    throw Error(`Study with nctID '${nctID}' already exists in database`);
+    throwError("already-exists", `Study with nctID '${nctID}' already exists in database`);
   }
 };
 
@@ -18,7 +18,7 @@ const checkOwnership = (contactEmail, userEmail) => {
   const contactEmailLower = contactEmail.toLowerCase();
 
   if (userEmailLower !== contactEmailLower) {
-    throw Error("Ownership cannot be verified");
+    throwError("permission-denied", "Ownership cannot be verified");
   }
 };
 
@@ -27,9 +27,9 @@ module.exports = async (data, context) => {
   const { email, email_verified } = context.auth.token;
   const { nctID } = data;
 
-  if (!uid) throw Error("User not logged in");
-  if (!nctID) throw Error("Parameter nctID needs to be defined");
-  if (!email_verified) throw Error("User email is not verified");
+  if (!uid) throwError("unauthenticated", "User not logged in");
+  if (!nctID) throwError("invalid-argument", "Parameter nctID needs to be defined");
+  if (!email_verified) throwError("failed-precondition", "User email is not verified");
 
   await ensureNewStudy(nctID);
   const fetched = await fetchStudy(nctID);

@@ -1,12 +1,12 @@
 const { firestore } = require("admin");
-const { getDocument } = require("utils");
+const { throwError, getDocument } = require("utils");
 
 const mergeStudy = require("./__utils__/merge-study");
 const fetchStudy = require("./__utils__/fetch-study");
 
 const assertOwnership = (researcherID, userID) => {
   if (researcherID !== userID) {
-    throw Error(`User ${userID} is not allowed to update this study`);
+    throwError("permission-denied", `User ${userID} is not allowed to update this study`);
   }
 };
 
@@ -14,8 +14,8 @@ module.exports = async (data, context) => {
   const { uid } = context.auth;
   const { nctID } = data;
 
-  if (!uid) throw Error("User not logged in");
-  if (!nctID) throw Error("Parameter nctID must be defined");
+  if (!uid) throwError("unauthenticated", "User not logged in");
+  if (!nctID) throwError("invalid-argument", "Parameter nctID must be defined");
 
   const fetchedStudy = await fetchStudy(nctID);
   const currentStudy = await getDocument(firestore.collection("studies").doc(nctID));
