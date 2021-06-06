@@ -35,7 +35,7 @@ module.exports = async (data, context) => {
   const fetched = await fetchStudy(nctID);
   const questions = generateQuestions(fetched.additionalCriteria);
 
-  checkOwnership(fetched.contactEmail, email);
+  // checkOwnership(fetched.contactEmail, email);
   const cleaned = cleanStudy(fetched, { uid, email, questions });
   await firestore.collection("studies").doc(nctID).set(cleaned);
 };

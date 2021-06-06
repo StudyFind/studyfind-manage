@@ -11,6 +11,10 @@ module.exports = async (_, context) => {
 
   if (!uid) throwError("unauthenticated", "User not logged in");
 
+  // TODO: Check for email verification
+  // NOTE: Previously ran into issues with `context.auth.token.email_verified` not updating
+  //       even though `auth.currentUser.emailVerified` was updated on the frontend
+
   const fetchedStudies = await fetchStudies(email);
 
   const cleanedStudies = fetchedStudies.map((fetched) => {
