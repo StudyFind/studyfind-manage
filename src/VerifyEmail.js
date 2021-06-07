@@ -5,22 +5,19 @@ import Message from "./Message";
 
 function VerifyEmail({ code }) {
   const [success, setSuccess] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (code) {
       auth
         .applyActionCode(code)
         .then(() => setSuccess(true))
-        .catch(() => setSuccess(false))
-        .finally(() => setLoading(false));
+        .catch(() => setSuccess(false));
     } else {
       setSuccess(false);
-      setLoading(false);
     }
   }, [code]);
 
-  if (loading) {
+  if (success === null) {
     return (
       <Flex py="120px" w="100%" justify="center">
         <Spinner />
@@ -28,20 +25,16 @@ function VerifyEmail({ code }) {
     );
   }
 
-  if (success) {
-    return (
-      <Message
-        status="success"
-        title="Verification successful!"
-        description="Your email has now been verified!"
-      />
-    );
-  }
-
-  return (
+  return success ? (
+    <Message
+      status="success"
+      title="Verification successful!"
+      description="Your email has now been verified!"
+    />
+  ) : (
     <Message
       status="failure"
-      title="Verification expired"
+      title="Verification expired!"
       description="Your email verification was unsuccessful"
     />
   );
