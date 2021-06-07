@@ -5,7 +5,7 @@ module.exports = async (snapshot) => {
   const researcherID = snapshot.id;
   const researcherName = snapshot.get("name");
 
-  auth.setCustomUserClaims(researcherID, { usertype: "researcher" });
+  await auth.setCustomUserClaims(researcherID, { usertype: "researcher" });
 
   return firestore.collection("researchers").doc(researcherID).collection("notifications").add({
     time: Date.now(),
