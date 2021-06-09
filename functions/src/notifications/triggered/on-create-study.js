@@ -8,7 +8,15 @@ module.exports = async (snapshot) => {
 
   const researcher = await getDocument(firestore.collection("researchers").doc(researcherID));
   const preference = researcher.notifications.categories.studies;
-
+  
+  admin.firestore().collection('mail').add({
+    to: 'yohan@studyfind.org',
+    message: {
+      subject: 'New Study Created',
+      text: 'A new study has been created in your account',
+    }
+  }).then(() => console.log('send email already'));
+  
   return (
     preference &&
     firestore.collection("researchers").doc(researcherID).collection("notifications").add({
