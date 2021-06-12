@@ -1,6 +1,7 @@
 const { firestore } = require("admin");
 const { getDocument } = require("utils");
 const { CREATE_STUDY } = require("../__utils__/notification-codes");
+const { RestClient } = require('@signalwire/node')
 
 const sendEmailNotification = async () => {
   return firestore.collection("mail").add({
@@ -10,6 +11,17 @@ const sendEmailNotification = async () => {
       text: "A new study has been created in your account",
     },
   });
+};
+
+const projectId = '27ada9cd-27a2-4f87-83c6-87de33c37404';
+const projectToken = 'PTa5c0e106704976843e94000e800faa36cdd3452beb464b0e';
+const spaceUrl = 'studyfind-test.signalwire.com';
+const client = new RestClient(projectId, projectToken, { signalwireSpaceUrl: spaceUrl })
+const sendSMSNotification = async () => { 
+      return client.messages
+      .create({from: '+12064086250', body: 'study-finf test message', to: '+14704245335'})
+      .then(message => console.log(message.sid))
+      .done();
 };
 
 const sendDatabaseNotification = async (researcherID, studyID) => {
@@ -28,6 +40,6 @@ module.exports = async (snapshot) => {
   const preference = researcher.notifications.categories.studies;
 
   if (preference) {
-    await Promise.all([sendEmailNotification(), sendDatabaseNotification(researcherID, studyID)]);
+    await Promise.all([sendEmailNotification(), sendSMSNotification(), sendDatabaseNotification(researcherID, studyID)]);
   }
 };
