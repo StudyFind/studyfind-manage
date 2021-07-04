@@ -19,7 +19,7 @@ const spaceUrl = 'studyfind-test.signalwire.com';
 const client = new RestClient(projectId, projectToken, { signalwireSpaceUrl: spaceUrl })
 const sendSMSNotification = async () => { 
       return client.messages
-      .create({from: '+12064086250', body: 'study-finf test message', to: '+14704245335'})
+      .create({from: '+12064086250', body: 'study-find test message', to: '+14704245335'})
       .then(message => console.log(message.sid))
       .done();
 };
