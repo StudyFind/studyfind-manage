@@ -22,6 +22,7 @@ const onCreateParticipantAccount = require("./notifications/triggered/on-create-
 const onCreateStudy = require("./notifications/triggered/on-create-study");
 const onDeleteStudy = require("./notifications/triggered/on-delete-study");
 const onNewParticipant = require("./notifications/triggered/on-new-participant");
+const onCreateMeeting = require("./notifications/triggered/on-create-meetings");
 
 exports.onResearcherCreateAccount = functions.firestore
   .document("researchers/{researcherID}")
@@ -33,6 +34,7 @@ exports.onParticipantCreateAccount = functions.firestore
 
 exports.onCreateStudy = functions.firestore.document("studies/{studyID}").onCreate(onCreateStudy);
 exports.onDeleteStudy = functions.firestore.document("studies/{studyID}").onDelete(onDeleteStudy);
+exports.onCreateMeeting = functions.firestore.document("studies/{studyID}").onCreate(onCreateMeeting);
 exports.onNewParticipant = functions.firestore
   .document("studies/{studyID}/participants/{participantID}")
   .onCreate(onNewParticipant);
