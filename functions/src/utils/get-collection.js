@@ -4,9 +4,7 @@ module.exports = async (query) => {
   const collection = [];
   const snapshot = await query.get();
 
-  snapshot.forEach((doc) => {
-    return collection.push(formatDoc(doc));
-  });
+  snapshot.forEach((doc) => collection.push(formatDoc(doc)));
 
   return collection;
 };

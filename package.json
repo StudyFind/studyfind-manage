@@ -27,7 +27,8 @@
     "emulate": "firebase emulators:start",
     "test": "jest test --passWithNoTests",
     "eject": "react-scripts eject",
-    "lint": "eslint ./src ./functions/src --ext .js,.jsx"
+    "lint": "eslint ./src ./functions/src --ext .js,.jsx",
+    "kill": "npx kill-port 9099 5001 8080 8085"
   },
   "eslintConfig": {
     "extends": [

@@ -13,9 +13,9 @@ exports.createStudy = functions.https.onCall(createStudy);
 exports.updateStudy = functions.https.onCall(updateStudy);
 exports.welcomeAccount = functions.https.onCall(welcomeAccount);
 
-// =========================== //
-// ======== TRIGGERED ======== //
-// =========================== //
+// ========================================= //
+// ======== TRIGGERED NOTIFICATIONS ======== //
+// ========================================= //
 const onCreateResearcherAccount = require("./notifications/triggered/on-create-researcher-account");
 const onCreateParticipantAccount = require("./notifications/triggered/on-create-participant-account");
 
@@ -39,9 +39,9 @@ exports.onNewParticipant = functions.firestore
   .document("studies/{studyID}/participants/{participantID}")
   .onCreate(onNewParticipant);
 
-// =========================== //
-// ======== SCHEDULED ======== //
-// =========================== //
+// ========================================= //
+// ======== SCHEDULED NOTIFICATIONS ======== //
+// ========================================= //
 const remindersRunner = require("./notifications/scheduled/reminders");
 const meetingsRunner = require("./notifications/scheduled/meetings");
 

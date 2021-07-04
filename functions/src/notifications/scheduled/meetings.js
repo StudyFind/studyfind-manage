@@ -64,7 +64,7 @@ module.exports = async () => {
         meta: { participantID, meetingID: meeting.id },
       };
 
-      await Promise.all([sendResearcherNotification(), sendParticipantNotification()]);
+      // await Promise.all([sendResearcherNotification(), sendParticipantNotification()]);
     })
   );
 };
