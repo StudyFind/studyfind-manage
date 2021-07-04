@@ -8,7 +8,7 @@ const moment = require("moment-timezone");
 const googleCredentials = require("./credentials.json");
 
 module.exports.addEventToCalendar = async(snapshot) =>{
-    const researcherID  = snapshot.get("ResearcherID");
+    const researcherID  = snapshot.get("researcherID");
     const timeZone = await getDocument(firestore.collection("researchers").doc(researcherID)).timeZone;
     const strat = moment.unix(snapshot.get("time")/1000).tz(timeZone).format('YYYY-MM-DDTHH:mm:ss');
     const end = moment.unix(snapshot.get("time")/1000 + 30*60).tz(timeZone).format('YYYY-MM-DDTHH:mm:ss');

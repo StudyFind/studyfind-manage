@@ -34,7 +34,7 @@ exports.onParticipantCreateAccount = functions.firestore
 
 exports.onCreateStudy = functions.firestore.document("studies/{studyID}").onCreate(onCreateStudy);
 exports.onDeleteStudy = functions.firestore.document("studies/{studyID}").onDelete(onDeleteStudy);
-exports.onCreateMeeting = functions.firestore.document("studies/{studyID}").onCreate(onCreateMeeting);
+exports.onCreateMeeting = functions.firestore.document("meetings/{studyID}").onCreate(onCreateMeeting);
 exports.onNewParticipant = functions.firestore
   .document("studies/{studyID}/participants/{participantID}")
   .onCreate(onNewParticipant);
