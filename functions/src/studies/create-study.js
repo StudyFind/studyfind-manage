@@ -29,7 +29,11 @@ module.exports = async (data, context) => {
 
   if (!uid) throwError("unauthenticated", "User not logged in");
   if (!nctID) throwError("invalid-argument", "Parameter nctID needs to be defined");
-  if (!email_verified) throwError("failed-precondition", "User email is not verified");
+
+  // TODO: Check for email verification
+  // NOTE: Previously ran into issues with `context.auth.token.email_verified` not updating
+  //       even though `auth.currentUser.emailVerified` was updated on the frontend
+  // if (!email_verified) throwError("failed-precondition", "User email is not verified");
 
   await ensureNewStudy(nctID);
   const fetched = await fetchStudy(nctID);
