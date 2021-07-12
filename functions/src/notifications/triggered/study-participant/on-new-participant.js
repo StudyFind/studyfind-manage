@@ -1,6 +1,6 @@
 const { firestore } = require("admin");
 const { getDocument } = require("utils");
-const { NEW_PARTICIPANT } = require("../__utils__/notification-codes");
+const { NEW_PARTICIPANT } = require("../../__utils__/notification-codes");
 
 module.exports = async (snapshot, context) => {
   const participantID = snapshot.id;

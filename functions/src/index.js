@@ -16,26 +16,58 @@ exports.welcomeAccount = functions.https.onCall(welcomeAccount);
 // =========================== //
 // ======== TRIGGERED ======== //
 // =========================== //
-const onCreateResearcherAccount = require("./notifications/triggered/on-create-researcher-account");
-const onCreateParticipantAccount = require("./notifications/triggered/on-create-participant-account");
+const onCreateResearcherAccount = require("./notifications/triggered/researcher-account/on-create-researcher-account");
+const onUpdateResearcherAccount = require("./notifications/triggered/researcher-account/on-update-researcher-account");
+const onDeleteResearcherAccount = require("./notifications/triggered/researcher-account/on-delete-researcher-account");
 
-const onCreateStudy = require("./notifications/triggered/on-create-study");
-const onDeleteStudy = require("./notifications/triggered/on-delete-study");
-const onNewParticipant = require("./notifications/triggered/on-new-participant");
+const onCreateParticipantAccount = require("./notifications/triggered/participant-account/on-create-participant-account");
+const onUpdateParticipantAccount = require("./notifications/triggered/participant-account/on-update-participant-account");
+const onDeleteParticipantAccount = require("./notifications/triggered/participant-account/on-delete-participant-account");
 
-exports.onResearcherCreateAccount = functions.firestore
-  .document("researchers/{researcherID}")
-  .onCreate(onCreateResearcherAccount);
+const onCreateStudy = require("./notifications/triggered/study/on-create-study");
+const onUpdateStudy = require("./notifications/triggered/study/on-update-study");
+const onDeleteStudy = require("./notifications/triggered/study/on-delete-study");
 
-exports.onParticipantCreateAccount = functions.firestore
-  .document("participants/{participantID}")
-  .onCreate(onCreateParticipantAccount);
+const onCreateReminder = require("./notifications/triggered/reminder/on-create-reminder");
+const onUpdateReminder = require("./notifications/triggered/reminder/on-update-reminder");
+const onDeleteReminder = require("./notifications/triggered/reminder/on-delete-reminder");
 
-exports.onCreateStudy = functions.firestore.document("studies/{studyID}").onCreate(onCreateStudy);
-exports.onDeleteStudy = functions.firestore.document("studies/{studyID}").onDelete(onDeleteStudy);
-exports.onNewParticipant = functions.firestore
-  .document("studies/{studyID}/participants/{participantID}")
-  .onCreate(onNewParticipant);
+const onCreateMeeting = require("./notifications/triggered/meeting/on-create-meeting");
+const onUpdateMeeting = require("./notifications/triggered/meeting/on-update-meeting");
+const onDeleteMeeting = require("./notifications/triggered/meeting/on-delete-meeting");
+
+const onNewParticipant = require("./notifications/triggered/study-participant/on-new-participant");
+
+const researchersRef = functions.firestore.document("researchers/{researcherID}");
+const participantsRef = functions.firestore.document("participants/{participantID}");
+const studiesRef = functions.firestore.document("studies/{studyID}");
+const remindersRef = functions.firestore.document("reminders/{reminderID}");
+const meetingsRef = functions.firestore.document("meetings/{meetingID}");
+const studyParticipantsRef = functions.firestore.document(
+  "studies/{studyID}/participants/{participantID}"
+);
+
+exports.onCreateResearcherAccount = researchersRef.onCreate(onCreateResearcherAccount);
+exports.onUpdateResearcherAccount = researchersRef.onUpdate(onUpdateResearcherAccount);
+exports.onDeleteResearcherAccount = researchersRef.onDelete(onDeleteResearcherAccount);
+
+exports.onCreateParticipantAccount = participantsRef.onCreate(onCreateParticipantAccount);
+exports.onUpdateParticipantAccount = participantsRef.onUpdate(onUpdateParticipantAccount);
+exports.onDeleteParticipantAccount = participantsRef.onDelete(onDeleteParticipantAccount);
+
+exports.onCreateStudy = studiesRef.onCreate(onCreateStudy);
+exports.onUpdateStudy = studiesRef.onUpdate(onUpdateStudy);
+exports.onDeleteStudy = studiesRef.onDelete(onDeleteStudy);
+
+exports.onCreateReminder = remindersRef.onCreate(onCreateReminder);
+exports.onUpdateReminder = remindersRef.onUpdate(onUpdateReminder);
+exports.onDeleteReminder = remindersRef.onDelete(onDeleteReminder);
+
+exports.onCreateMeeting = meetingsRef.onCreate(onCreateMeeting);
+exports.onUpdateMeeting = meetingsRef.onUpdate(onUpdateMeeting);
+exports.onDeleteMeeting = meetingsRef.onDelete(onDeleteMeeting);
+
+exports.onNewParticipant = studyParticipantsRef.onCreate(onNewParticipant);
 
 // =========================== //
 // ======== SCHEDULED ======== //
