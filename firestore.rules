@@ -1,7 +1,7 @@
 rules_version = "2";
 service cloud.firestore {
   match /databases/{database}/documents {
-    // AUTH
+    // AUTH DETAILS
     function isAuthenticated() {
       return request.auth != null
     }
@@ -22,6 +22,121 @@ service cloud.firestore {
       return request.auth.token.researcher
     }
 
+    // TYPE CHECKING
+    function isBoolean(value) {
+      return value is bool
+    }
+
+    function isFloat(value) {
+      return value is float
+    }
+
+    function isInteger(value) {
+      return value is int
+    }
+
+    function isNumber(value) {
+      return value is number
+    }
+
+    function isString() {
+      return value is string
+    }
+
+    function isList(value) {
+      return value is list
+    }
+
+    function isMap(value) {
+      return value is map
+    }
+
+
+    // UTIL FUNCTIONS
+    function isTrue(value) {
+      return value is bool && value == true
+    }
+
+    function isFalse(value) {
+      return value is bool && value == false
+    }
+
+    function isEmail(value) {
+      return value is string && value.matches(".*@.*\..{2,3}")
+    }
+
+    function isURL(value) {
+      return value is string && value.matches("/^(ht|f)tp(s?):\\/\\/[0-9a-zA-Z]([-.\\w]*[0-9a-zA-Z])*((0-9)*)*(\\/?)([a-zA-Z0-9\\-\\.\\?\\,\\'\\/\\\\+&=%\\$#_]*)?$/")
+    }
+
+    function isDate(value) {
+      // meets YYYY-MM-DD format
+      return value is string && value.matches("/^(19|20)[0-9][0-9][-\\/. ](0[1-9]|1[012])[-\\/. ](0[1-9]|[12][0-9]|3[01])$/")
+    }
+
+    function isTimestamp(value) {
+      // 946684800000 = unix (millis) timestamp value of 2000-01-01 at 12:00:00am
+      // 32503680000000 = unix (millis) timestamp value of 3000-01-01 at 12:00:00am
+      return value is int && 946684800000 <= value && value <= 32503680000000
+    }
+
+    function isAmericanTimezone() {
+      return ["America/Adak", "America/Anchorage", "America/Boise", "America/Chicago", "America/Denver", "America/Detroit", "America/Indiana/Indianapolis", "America/Indiana/Knox", "America/Indiana/Marengo", "America/Indiana/Petersburg", "America/Indiana/Tell_City", "America/Indiana/Vevay", "America/Indiana/Vincennes", "America/Indiana/Winamac", "America/Juneau", "America/Kentucky/Louisville", "America/Kentucky/Monticello", "America/Los_Angeles", "America/Menominee", "America/Metlakatla", "America/New_York", "America/Nome", "America/North_Dakota/Beulah", "America/North_Dakota/Center", "America/North_Dakota/New_Salem", "America/Phoenix", "America/Sitka", "America/Yakutat", "Pacific/Honolulu"]
+    }
+
+    function isWeeklyOffset() {
+      return value is int && 0 <= value < 604800000
+    }
+
+     function isBetweenMinMaxCharacterCount(value, min, max) {
+      return value is string && min <= value.size() && value.size() <= max
+    }
+
+    function isBetweenMinMaxValue(value, min, max) {
+      return value is number && min <= value.size() && value.size() <= max
+    }
+
+    function isUnchanged(fieldPath) {
+      return request.resource.data.get(fieldPath) == resource.data.get(fieldPath)
+    }
+
+    function isChanged(fieldPath) {
+      return request.resource.data.get(fieldPath) != resource.data.get(fieldPath)
+    }
+
+    function isInFuture(value) {
+      return isTimestamp(value) && (request.time / 1000000) <= value
+    }
+
+    function isFirebaseUID(value) {
+      return value is string && value.matches("[a-zA-Z0-9]{28}")
+    }
+
+    function isStudyNCTID(value) {
+      return value is string && value.matches("NCT[0-9]{8}")
+    }
+
+    function isSet(fieldName) {
+      return resource.data[fieldName] == false && request.resource.data[fieldName] == true
+    }
+
+    function isFakename(value) {
+      return value is string && value.matches("[0-9A-Z]{10}")
+    }
+
+    // CONSTANTS
+    function isSex(value) {
+      return value in ["Male", "Female"]
+    }
+
+    function isSurveyQuestionType(value) {
+      return value in ["short answer", "long answer", "multiple choice", "checkboxes", "dropdown", "number", "email", "phone", "file", "link", "date", "time"]
+    }
+
+    function isParticipantStatus(value) {
+      return value in ["interested", "consented", "screened", "accepted", "rejected"]
+    }
+
     // DOCUMENT QUERIES
     function getStudyData(studyID) {
       return get(/databases/$(database)/documents/studies/$(studyID)).data
@@ -31,444 +146,488 @@ service cloud.firestore {
       return getStudyData(studyID).researcher.id
     }
 
-    function checkStudyParticipantExists(studyID, participantID) {
-      return exists(/databases/$(database)/documents/studies/$(studyID)/participants/$(participantID))
-    }
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    function ensureResearcherOwnsStudy(studyID, researcherID) {
-      return getStudyResearcherID(studyID) == researcherID
-    }
-
-    // CONSTANTS
-    function validTimezoneList() {
-      return ["America/Adak", "America/Anchorage", "America/Boise", "America/Chicago", "America/Denver", "America/Detroit", "America/Indiana/Indianapolis", "America/Indiana/Knox", "America/Indiana/Marengo", "America/Indiana/Petersburg", "America/Indiana/Tell_City", "America/Indiana/Vevay", "America/Indiana/Vincennes", "America/Indiana/Winamac", "America/Juneau", "America/Kentucky/Louisville", "America/Kentucky/Monticello", "America/Los_Angeles", "America/Menominee", "America/Metlakatla", "America/New_York", "America/Nome", "America/North_Dakota/Beulah", "America/North_Dakota/Center", "America/North_Dakota/New_Salem", "America/Phoenix", "America/Sitka", "America/Yakutat", "Pacific/Honolulu"]
-    }
-
-    function validStatusList() {
-      return ["interested", "screened", "consented", "accepted", "rejected"]
-    }
-
-    // UTILS
-    function isNonEmptyString(value) {
-      return value is string && value.size() > 0
-    }
-
-    function isNonEmptyList(value) {
-      return value is list && value.size() > 0
-    }
-
-    function isNonNegativeInt(value) {
-      return value is int && value >= 0
-    }
-
-    function isDateFormat(value) {
-      // meets YYYY-MM-DD format
-      return value is string && value.matches("/^(19|20)[0-9][0-9][-\\/. ](0[1-9]|1[012])[-\\/. ](0[1-9]|[12][0-9]|3[01])$/")
-    }
-
-    function isURLFormat(value) {
-      return value is string && value.matches("/^(ht|f)tp(s?):\\/\\/[0-9a-zA-Z]([-.\\w]*[0-9a-zA-Z])*((0-9)*)*(\\/?)([a-zA-Z0-9\\-\\.\\?\\,\\'\\/\\\\+&=%\\$#_]*)?$/")
-    }
-
-    function isDivisibleByThirtyMinutes(value) {
-      // 1800000 = milliseconds in 30 minutes
-      return value % 1800000
-    }
-
-    function isWeeklyOffset(value) {
-      // 604800000 = milliseconds in one week
-      return value is int && 0 <= value && value <= 604800000
-    }
-
-    function isTimestampFormat(value) {
-      // 946684800000 = unix (millis) timestamp value of 2000-01-01 at 12:00:00am
-      // 32503680000000 = unix (millis) timestamp value of 3000-01-01 at 12:00:00am
-      return value is int && 946684800000 <= value && value <= 32503680000000
-    }
-
-    function getUpdatedFields() {
-      return request.resource.data.diff(resource.data).affectedKeys()
-    }
-
-    function getCombinedFields() {
-      return request.resource.data.keys()
-    }
-
-    function assertRequiredFields(names) {
-      return getCombinedFields().hasAll(names)
-    }
-
-    function assertScopedFields(names) {
-      return getCombinedFields().hasOnly(names)
-    }
-
-    function assertExactFields(names) {
-      // request data should contain exactly the following fields
-      return assertRequiredFields(names) && assertScopedFields(names)
-    }
-
-    function assertMutableFields(names) {
-      return getUpdatedFields().hasOnly(names)
-    }
-
-    function assertImmutableFields(names) {
-      return !getUpdatedFields().hasAny(names)
-    }
-
-    function isLoneUpdatedField(name) {
-      return getUpdatedFields().hasOnly([name]) && getUpdatedFields().hasAll([name])
-    }
-
-    function isFieldChanging(name) {
-      return resource.data[name] != request.resource.data[name]
-    }
-
-    function isFieldChangingFromTo(name, from, to) {
-      return resource.data[name] == from && request.resource.data[name] == to
-    }
-
-    function researcherRead(researcherID) {
+    function readResearcher(researcherID) {
       return isAuthenticatedAs(researcherID)
     }
 
-    function researcherCreate(researcherID) {
+    function createResearcher(researcherID) {
       return isAuthenticatedAs(researcherID)
-        && assertExactFields(["name", "timezone"])
-        && request.resource.data.name is string
-        && request.resource.data.name.size() > 0
-        && request.resource.data.name.size() < 50
-        && request.resource.data.timezone in validTimezoneList()
+        && isBetweenMinMaxCharacterCount(request.resource.data.name, 1, 100)
+        && isBetweenMinMaxCharacterCount(request.resource.data.organization, 0, 100)
+        && isBetweenMinMaxCharacterCount(request.resource.data.background, 0, 500)
+        && isAmericanTimezone(request.resource.data.timezone)
+
+        && isMap(request.resource.data.preferences)
+
+        && isMap(request.resource.data.preferences.timezone)
+        && isBoolean(request.resource.data.preferences.timezone.autodetect)
+
+        && isMap(request.resource.data.preferences.notifications)
+        && isBoolean(request.resource.data.preferences.notifications.email)
+        && isBoolean(request.resource.data.preferences.notifications.phone)
+        && isBoolean(request.resource.data.preferences.notifications.toast)
+
+        && isMap(request.resource.data.preferences.notifications.categories)
+        && isBoolean(request.resource.data.preferences.notifications.categories.account)
+        && isBoolean(request.resource.data.preferences.notifications.categories.studies)
+        && isBoolean(request.resource.data.preferences.notifications.categories.participants)
+        && isBoolean(request.resource.data.preferences.notifications.categories.meetings)
+        && isBoolean(request.resource.data.preferences.notifications.categories.messages)
     }
 
-    function researcherUpdate(researcherID) {
+    function updateResearcher(researcherID) {
       return isAuthenticatedAs(researcherID)
-        && assertImmutableFields(["name"])
-        && assertMutableFields([
-          "timezone",
-          "organization",
-          "background",
-          "preferences.autodetectTimezone",
-          "notifications.email",
-          "notifications.categories.account",
-          "notifications.categories.studies",
-          "notifications.categories.participants",
-          "notifications.categories.meetings"
-        ])
+        && isUnchanged("name")
+        && isBetweenMinMaxCharacterCount(request.resource.data.organization, 0, 100)
+        && isBetweenMinMaxCharacterCount(request.resource.data.background, 0, 500)
+        && isAmericanTimezone(request.resource.data.timezone)
 
-        // required fields will exist in document so no access failure
-        && request.resource.data.timezone in validTimezoneList()
+        && isMap(request.resource.data.preferences)
 
-        // optional fields may not exist in document so using `.get`
-        && request.resource.data.get("organization", "") is string
-        && request.resource.data.get("background", "") is string
-        && request.resource.data.get("preferences", {}) is map
-        && request.resource.data.get("preferences.autodetectTimezone", true) is bool
-        && request.resource.data.get("notifications", {}) is map
-        && request.resource.data.get("notifications.email", true) is bool
-        && request.resource.data.get("notifications.categories.account", true) is bool
-        && request.resource.data.get("notifications.categories.studies", true) is bool
-        && request.resource.data.get("notifications.categories.participants", true) is bool
-        && request.resource.data.get("notifications.categories.meetings", true) is bool
+        && isMap(request.resource.data.preferences.timezone)
+        && isBoolean(request.resource.data.preferences.timezone.autodetect)
+
+        && isMap(request.resource.data.preferences.notifications)
+        && isBoolean(request.resource.data.preferences.notifications.email)
+        && isBoolean(request.resource.data.preferences.notifications.phone)
+        && isBoolean(request.resource.data.preferences.notifications.toast)
+
+        && isMap(request.resource.data.preferences.notifications.categories)
+        && isBoolean(request.resource.data.preferences.notifications.categories.account)
+        && isBoolean(request.resource.data.preferences.notifications.categories.studies)
+        && isBoolean(request.resource.data.preferences.notifications.categories.participants)
+        && isBoolean(request.resource.data.preferences.notifications.categories.meetings)
+        && isBoolean(request.resource.data.preferences.notifications.categories.messages)
     }
 
-    function researcherDelete(researcherID) {
+    function deleteResearcher(researcherID) {
       return isAuthenticatedAs(researcherID)
     }
 
-    function participantRead(participantID) {
+    function readParticipant(participantID) {
       return isAuthenticatedAs(participantID)
     }
 
-    function participantCreate(participantID) {
+    function createParticipant(participantID) {
+      return isAuthenticatedAs(participantID)
+        && isBetweenMinMaxCharacterCount(request.resource.data.name, 1, 100)
+        && isBetweenMinMaxCharacterCount(request.resource.data.availability, 0, 500)
+        && isAmericanTimezone(request.resource.data.timezone)
+        && isDate(request.resource.data.birthdate)
+        && isSex(request.resource.data.sex)
+
+        && isMap(request.resource.data.location)
+        && isBetweenMinMaxValue(request.resource.data.location.latitude, -90, 90)
+        && isBetweenMinMaxValue(request.resource.data.location.longitude, -180, 180)
+
+        && isList(request.resource.data.enrolled)
+        && isList(request.resource.data.saved)
+
+        && isMap(request.resource.data.preferences)
+
+        && isMap(request.resource.data.preferences.timezone)
+        && isBoolean(request.resource.data.preferences.timezone.autodetect)
+
+        && isMap(request.resource.data.preferences.location)
+        && isBoolean(request.resource.data.preferences.location.autodetect)
+
+        && isMap(request.resource.data.preferences.notifications)
+        && isBoolean(request.resource.data.preferences.notifications.email)
+        && isBoolean(request.resource.data.preferences.notifications.phone)
+        && isBoolean(request.resource.data.preferences.notifications.toast)
+
+        && isMap(request.resource.data.preferences.notifications.categories)
+        && isBoolean(request.resource.data.preferences.notifications.categories.account)
+        && isBoolean(request.resource.data.preferences.notifications.categories.status)
+        && isBoolean(request.resource.data.preferences.notifications.categories.reminders)
+        && isBoolean(request.resource.data.preferences.notifications.categories.meetings)
+        && isBoolean(request.resource.data.preferences.notifications.categories.messages)
+    }
+
+    function updateParticipant(participantID) {
+      return isAuthenticatedAs(participantID)
+        && isUnchanged("name")
+        && isBetweenMinMaxCharacterCount(request.resource.data.availability, 0, 500)
+        && isAmericanTimezone(request.resource.data.timezone)
+        && isDate(request.resource.data.birthdate)
+        && isSex(request.resource.data.sex)
+
+        && isMap(request.resource.data.location)
+        && isBetweenMinMaxValue(request.resource.data.location.latitude, -90, 90)
+        && isBetweenMinMaxValue(request.resource.data.location.longitude, -180, 180)
+
+        && isList(request.resource.data.enrolled)
+        && isList(request.resource.data.saved)
+
+        && isMap(request.resource.data.preferences)
+
+        && isMap(request.resource.data.preferences.timezone)
+        && isBoolean(request.resource.data.preferences.timezone.autodetect)
+
+        && isMap(request.resource.data.preferences.location)
+        && isBoolean(request.resource.data.preferences.location.autodetect)
+
+        && isMap(request.resource.data.preferences.notifications)
+        && isBoolean(request.resource.data.preferences.notifications.email)
+        && isBoolean(request.resource.data.preferences.notifications.phone)
+        && isBoolean(request.resource.data.preferences.notifications.toast)
+
+        && isMap(request.resource.data.preferences.notifications.categories)
+        && isBoolean(request.resource.data.preferences.notifications.categories.account)
+        && isBoolean(request.resource.data.preferences.notifications.categories.status)
+        && isBoolean(request.resource.data.preferences.notifications.categories.reminders)
+        && isBoolean(request.resource.data.preferences.notifications.categories.meetings)
+        && isBoolean(request.resource.data.preferences.notifications.categories.messages)
+    }
+
+    function deleteParticipant(participantID) {
       return isAuthenticatedAs(participantID)
     }
 
-    function participantUpdate(participantID) {
-      return isAuthenticatedAs(participantID)
-    }
-
-    function participantDelete(participantID) {
-      return isAuthenticatedAs(participantID)
-    }
-
-    function notificationRead(userID) {
+    function readNotification(userID) {
       return isAuthenticatedAs(userID)
     }
 
-    function notificationUpdate(userID) {
-      // only allow "read" attribute to be changed from false to true
-      return isAuthenticatedAs(userID) && isFieldChangingFromTo("read", false, true)
+    function createNotification(userID) {
+      return false // notification is created by cloud function on trigger
     }
 
-    function studyRead() {
-      return isAuthenticated();
+    function updateNotification(userID) {
+      return isAuthenticatedAs(userID)
+        && isUnchanged("code")
+        && isUnchanged("meta")
+        && isUnchanged("time")
+        && isSet("read")
     }
 
-    function studyUpdate(researcherID) {
-      return isAuthenticatedAs(researcherID)
-        && assertMutableFields(["published", "activated", "title", "description", "questions"])
-
-        && !("published" in getUpdatedFields()) || (
-          request.resource.data.published is bool
-          && isFieldChangingFromTo("published", false, true)
-        )
-
-        && !("activated" in getUpdatedFields()) || (
-          request.resource.data.activated is bool
-          && request.resource.data.published == true
-          && request.resource.data.activated != resource.data.activated
-        )
-
-        && request.resource.data.title is string
-        && request.resource.data.title.size() >= 50
-        && request.resource.data.title.size() <= 100
-
-        && request.resource.data.description is string
-        && request.resource.data.description.size() >= 300
-        && request.resource.data.description.size() <= 500
-
-        && request.resource.data.questions is list
+    function deleteNotification(userID) {
+      return false // notifications can never be deleted
     }
 
-    function studyDelete(researcherID) {
-      return isAuthenticatedAs(researcherID)
+    function readStudy(studyID) {
+      return isResearcher()
+        ? isAuthenticatedAs(resource.data.researcher.id)
+        : isAuthenticated()
     }
 
-    function studySurveyRead() {
-      return true;
+    function createStudy(studyID) {
+      return false // study is created by cloud function
     }
 
-    function studySurveyCreate() {
-      return true;
+    function updateStudy(studyID) {
+      return isAuthenticatedAs(resource.data.researcher.id)
+        && isUnchanged("createdAt")
+        && isUnchanged("updatedAt")
+        && isUnchanged("published") || isSet("published")
+        && isUnchanged("activated") || isTrue(request.resource.data.published)
+        && isUnchanged("control")
+        && isUnchanged("type")
+        && isUnchanged("age")
+        && isUnchanged("sex")
+        && isUnchanged("locations")
+        && isUnchanged("conditions")
+        && isUnchanged("researcher")
+        && isBetweenMinMaxCharacterCount(request.resource.data.title, 50, 100)
+        && isBetweenMinMaxCharacterCount(request.resource.data.description, 300, 500)
+        && isList(request.resource.data.questions)
     }
 
-    function studySurveyUpdate() {
-      return true;
+    function deleteStudy(studyID) {
+      return isAuthenticatedAs(resource.data.researcher.id)
     }
 
-    function studySurveyDelete() {
-      return true;
+    function readStudySurvey(studyID) {
+      return isResearcher()
+        ? isAuthenticatedAs(getStudyResearcherID(studyID))
+        : isAuthenticated()
     }
 
-    function studyParticipantRead(participantID, studyID) {
-      return isAuthenticatedAs(participantID) || isAuthenticatedAs(getStudyResearcherID(studyID))
+    function createStudySurvey(studyID) {
+      return isAuthenticatedAs(getStudyResearcherID(studyID))
+        && isBetweenMinMaxCharacterCount(request.resource.data.title, 1, 100)
+        && isList(request.resource.data.questions)
+        && isSurveyQuestionType(request.resource.data.questions[0].type)
+        && isBetweenMinMaxCharacterCount(request.resource.data.questions[0].prompt, 1, 500)
+        && isMap(request.resource.data.questions[0].constraints)
+        && isBoolean(request.resource.data.questions[0].required)
     }
 
-    function studyParticipantCreate(participantID) {
-      // only participants can add themselves to a study
+    function updateStudySurvey() {
+      return isAuthenticatedAs(getStudyResearcherID(studyID))
+        && isBetweenMinMaxCharacterCount(request.resource.data.title, 1, 100)
+        && isList(request.resource.data.questions)
+        && isSurveyQuestionType(request.resource.data.questions[0].type)
+        && isBetweenMinMaxCharacterCount(request.resource.data.questions[0].prompt, 1, 500)
+        && isMap(request.resource.data.questions[0].constraints)
+        && isBoolean(request.resource.data.questions[0].required)
+    }
+
+    function deleteStudySurvey() {
+      return isAuthenticatedAs(getStudyResearcherID(studyID))
+    }
+
+    function readStudyParticipant(studyID, participantID) {
+      return isAuthenticatedAs(getStudyResearcherID(studyID)) || isAuthenticatedAs(participantID)
+    }
+
+    function createStudyParticipant(participantID) {
       return isAuthenticatedAs(participantID)
-        && isVerified()
-        && assertExactFields(["fakename", "timezone", "responses", "status"])
-        && request.resource.data.fakename is string
-        && request.resource.data.fakename.size() == 8
-        && request.resource.data.timezone in validTimezoneList()
-        && request.resource.data.responses is list
-        && request.resource.data.status == validStatusList()[0]
+        && isFakename(request.resource.data.fakename)
+        && isAmericanTimezone(request.resource.data.timezone)
+        && isList(request.resource.data.responses)
+        && request.resource.data.status == "interested"
     }
 
-    function studyParticipantUpdate(studyID) {
-      // only researchers can update study participants
+    function updateStudyParticipant(studyID) {
       return isAuthenticatedAs(getStudyResearcherID(studyID))
-        && assertMutableFields(["status"])
-        && request.resource.data.status in validStatusList()
+        && isUnchanged("fakename")
+        && isUnchanged("timezone")
+        && isUnchanged("responses")
+        && isParticipantStatus(request.resource.data.status)
     }
 
-    function studyParticipantDelete(participantID, studyID) {
-      // either the researcher or the participant can delete the study participant data
-      return isAuthenticatedAs(participantID) || isAuthenticatedAs(getStudyResearcherID(studyID))
-    }
-
-    function studyParticipantNoteRead(studyID) {
+    function deleteStudyParticipant(studyID) {
       return isAuthenticatedAs(getStudyResearcherID(studyID))
     }
 
-    function studyParticipantNoteCreate(studyID) {
-      return isAuthenticatedAs(getStudyResearcherID(studyID))
-        && assertExactFields(["title", "body"])
-        && isNonEmptyString(request.resource.data.title)
-        && isNonEmptyString(request.resource.data.body)
-    }
-
-    function studyParticipantNoteUpdate(studyID) {
-      return isAuthenticatedAs(getStudyResearcherID(studyID))
-        && assertMutableFields(["title", "body"])
-        && isNonEmptyString(request.resource.data.title)
-        && isNonEmptyString(request.resource.data.body)
-    }
-
-    function studyParticipantNoteDelete(studyID) {
+    function readStudyParticipantNote(studyID) {
       return isAuthenticatedAs(getStudyResearcherID(studyID))
     }
 
-    function studyParticipantMessageRead(participantID, studyID) {
-      return isAuthenticatedAs(participantID) || isAuthenticatedAs(getStudyResearcherID(studyID))
+    function createStudyParticipantNote(studyID) {
+      return isAuthenticatedAs(getStudyResearcherID(studyID))
+        && isInFuture(request.resource.data.time)
+        && isBetweenMinMaxCharacterCount(request.resource.data.title, 1, 100)
+        && isBetweenMinMaxCharacterCount(request.resource.data.body, 1, 300)
     }
 
-    function studyParticipantMessageCreate(participantID, studyID) {
-      return isAuthenticatedAs(participantID) || isAuthenticatedAs(getStudyResearcherID(studyID))
-        && assertExactFields(["text", "time", "user", "read"])
-        && isNonEmptyString(request.resource.data.text)
-        && isTimestampFormat(request.resource.data.time)
-        && request.resource.data.user == request.auth.uid
-        && request.resource.data.read == false
+    function updateStudyParticipantNote(studyID) {
+      return isAuthenticatedAs(getStudyResearcherID(studyID))
+        && isUnchanged("time")
+        && isBetweenMinMaxCharacterCount(request.resource.data.title, 1, 100)
+        && isBetweenMinMaxCharacterCount(request.resource.data.body, 1, 300)
     }
 
-    function studyParticipantMessageUpdate(participantID, studyID) {
-      // only other user can update a user's message "read" status from false to true
-      return isAuthenticatedAs(participantID) || isAuthenticatedAs(getStudyResearcherID(studyID))
-        && resource.data.user != request.auth.uid
-        && assertMutableFields(["read"])
-        && isFieldChangingFromTo("read", false, true)
+    function deleteStudyParticipantNote(studyID) {
+      return isAuthenticatedAs(getStudyResearcherID(studyID))
     }
 
-    function reminderRead() {
-      return isAuthenticatedAs(resource.data.participantID) || isAuthenticatedAs(resource.data.researcherID)
+    function readStudyParticipantMessage(studyID, participantID) {
+      return isAuthenticatedAs(getStudyResearcherID(studyID)) || isAuthenticatedAs(participantID)
     }
 
-    function reminderCreate() {
+    function createStudyParticipantMessage(studyID, participantID) {
+      return isAuthenticatedAs(getStudyResearcherID(studyID)) || isAuthenticatedAs(participantID)
+        && isAuthenticatedAs(request.resource.data.user)
+        && isInFuture(request.resource.data.time)
+        && isString(request.resource.data.text)
+        && isBoolean(request.resource.data.read)
+    }
+
+    function updateStudyParticipantMessage(studyID, participantID) {
+      return isAuthenticatedAs(getStudyResearcherID(studyID)) || isAuthenticatedAs(participantID)
+        && !isAuthenticatedAs(resource.data.user)
+        && isUnchanged("user")
+        && isUnchanged("time")
+        && isUnchanged("text")
+        && isSet(request.resource.data.read)
+    }
+
+    function deleteStudyParticipantMessage(studyID, participantID) {
+      return false
+    }
+
+    function readReminder() {
+      return isAuthenticatedAs(request.resource.data.researcherID) || isAuthenticatedAs(request.resource.data.participantID)
+    }
+
+    function createReminder() {
       return isAuthenticatedAs(request.resource.data.researcherID)
-        && assertExactFields(["title", "times", "startDate", "endDate", "confirmedByParticipant", "researcherID", "participantID", "studyID"])
-        && isNonEmptyList(request.resource.data.times)
+        && isAuthenticatedAs(getStudyResearcherID(request.resource.data.studyID))
+        && exists(/databases/$(database)/documents/studies/$(request.resource.data.studyID)/participants/$(request.resource.data.participantID))
+        && isBetweenMinMaxCharacterCount(request.resource.data.title, 1, 100)
+        && isList(request.resource.data.times)
         && isWeeklyOffset(request.resource.data.times[0])
-        && isDivisibleByThirtyMinutes(request.resource.data.times[0])
-        && isDateFormat(request.resource.data.startDate)
-        && isDateFormat(request.resource.data.endDate)
-        && request.resource.data.confirmedByParticipant == false
-        && ensureResearcherOwnsStudy(request.resource.data.studyID, request.resource.data.researcherID)
-        && checkStudyParticipantExists(request.resource.data.studyID, request.resource.data.participantID)
+        && isDate(request.resource.data.startDate)
+        && isDate(request.resource.data.endDate)
+        && request.resource.data.startDate < request.resource.data.endDate
+        && isFalse(request.resource.data.confirmedByParticipant)
     }
 
-    function reminderUpdate() {
+    function updateReminder() {
       return (
-        isAuthenticatedAs(resource.data.participantID)
-        && assertMutableFields(["confirmedByParticipant"])
-        && isFieldChangingFromTo("confirmedByParticipant", false, true)
-      ) || (
         isAuthenticatedAs(resource.data.researcherID)
-        && assertMutableFields(["title", "times", "startDate", "endDate"])
-        && isNonEmptyList(request.resource.data.times)
+        && isUnchanged("researcherID")
+        && isUnchanged("participantID")
+        && isUnchanged("studyID")
+        && isUnchanged("confirmedByParticipant")
+        && isBetweenMinMaxCharacterCount(request.resource.data.title, 1, 100)
+        && isList(request.resource.data.times)
         && isWeeklyOffset(request.resource.data.times[0])
-        && isDivisibleByThirtyMinutes(request.resource.data.times[0])
-        && isDateFormat(request.resource.data.startDate)
-        && isDateFormat(request.resource.data.endDate)
+        && isDate(request.resource.data.startDate)
+        && isDate(request.resource.data.endDate)
+      ) || (
+        isAuthenticatedAs(resource.data.participantID)
+        && isUnchanged("researcherID")
+        && isUnchanged("participantID")
+        && isUnchanged("studyID")
+        && isUnchanged("title")
+        && isUnchanged("times")
+        && isUnchanged("startDate")
+        && isUnchanged("endDate")
+        && isSet(request.resource.data.confirmedByParticipant)
       )
     }
 
-    function reminderDelete() {
+    function deleteReminder() {
       return isAuthenticatedAs(resource.data.researcherID)
     }
 
-    function meetingRead() {
-      return isAuthenticatedAs(resource.data.participantID) || isAuthenticatedAs(resource.data.researcherID)
+    function readMeeting() {
+      return isAuthenticatedAs(request.resource.data.researcherID) || isAuthenticatedAs(request.resource.data.participantID)
     }
 
-    function meetingCreate() {
+    function createMeeting() {
       return isAuthenticatedAs(request.resource.data.researcherID)
-        && assertExactFields(["name", "time", "link", "researcherID", "participantID", "studyID"])
-        && isNonEmptyString(request.resource.data.name)
-        && isTimestampFormat(request.resource.data.time)
-        && isURLFormat(request.resource.data.link)
-        && request.resource.data.confirmedByParticipant == false
-        && ensureResearcherOwnsStudy(request.resource.data.studyID, request.resource.data.researcherID)
-        && checkStudyParticipantExists(request.resource.data.studyID, request.resource.data.participantID)
+        && isAuthenticatedAs(getStudyResearcherID(request.resource.data.studyID))
+        && exists(/databases/$(database)/documents/studies/$(request.resource.data.studyID)/participants/$(request.resource.data.participantID))
+        && isBetweenMinMaxCharacterCount(request.resource.data.name, 1, 100)
+        && isInFuture(request.resource.data.time)
+        && isURL(request.resource.data.link)
+        && isFalse(request.resource.data.confirmedByParticipant)
     }
 
-    function meetingUpdate() {
+    function updateMeeting() {
       return (
-        isAuthenticatedAs(resource.data.participantID)
-        && assertMutableFields(["confirmedByParticipant"])
-        && isFieldChangingFromTo("confirmedByParticipant", false, true)
-      ) || (
         isAuthenticatedAs(resource.data.researcherID)
-        && assertMutableFields(["name", "time", "link"])
-        && isNonEmptyString(request.resource.data.name)
-        && isTimestampFormat(request.resource.data.time)
-        && isURLFormat(request.resource.data.link)
+        && isUnchanged("researcherID")
+        && isUnchanged("participantID")
+        && isUnchanged("studyID")
+        && isUnchanged("confirmedByParticipant")
+        && isBetweenMinMaxCharacterCount(request.resource.data.name, 1, 100)
+        && isInFuture(request.resource.data.time)
+        && isURL(request.resource.data.link)
+      ) || (
+        isAuthenticatedAs(resource.data.participantID)
+        && isUnchanged("researcherID")
+        && isUnchanged("participantID")
+        && isUnchanged("studyID")
+        && isUnchanged("name")
+        && isUnchanged("time")
+        && isUnchanged("link")
+        && isSet(request.resource.data.confirmedByParticipant)
       )
     }
 
-    function meetingDelete() {
+    function deleteMeeting() {
       return isAuthenticatedAs(resource.data.researcherID)
     }
 
-    function feedbackCreate() {
-      return isAuthenticated();
+    function readFeedback() {
+      return false
+    }
+
+    function createFeedback() {
+      return isAuthenticated()
+        && isBetweenMinMaxCharacterCount(request.resource.data.title, 1, 100)
+        && isBetweenMinMaxCharacterCount(request.resource.data.body, 1, 500)
+        && isTimestamp(request.resource.data.time)
+        && isEmail(request.resource.data.email)
+        && isSide(request.resource.data.side)
+    }
+
+    function updateFeedback() {
+      return false
+    }
+
+    function deleteFeedback() {
+      return false
     }
 
   	match /researchers/{researcherID} {
-    	allow read: if researcherRead(researcherID)
-    	allow create: if researcherCreate(researcherID)
-    	allow update: if researcherUpdate(researcherID)
-    	allow delete: if researcherDelete(researcherID)
+    	allow read: if readResearcher(researcherID)
+      allow create: if createResearcher(researcherID)
+      allow update: if updateResearcher(researcherID)
+      allow delete: if deleteResearcher(researcherID)
 
       match /notifications/{notificationID} {
-      	allow read: if notificationRead(researcherID);
-        allow update: if notificationUpdate(researcherID);
+      	allow read: if readNotification(researcherID)
+        allow create: if createNotification(researcherID)
+        allow update: if updateNotification(researcherID)
+        allow delete: if deleteNotification(researcherID)
       }
     }
 
     match /participants/{participantID} {
-    	allow read: if participantRead(participantID);
-    	allow create: if participantCreate(participantID);
-    	allow update: if participantUpdate(participantID);
-    	allow delete: if participantDelete(participantID);
+    	allow read: if readParticipant(participantID)
+      allow create: if createParticipant(participantID)
+      allow update: if updateParticipant(participantID)
+      allow delete: if deleteParticipant(participantID)
 
       match /notifications/{notificationID} {
-      	allow read: if notificationRead(participantID);
-        allow update: if notificationUpdate(participantID);
+      	allow read: if readNotification(participantID)
+        allow create: if createNotification(participantID)
+        allow update: if updateNotification(participantID)
+        allow delete: if deleteNotification(participantID)
       }
     }
 
     match /studies/{studyID} {
-      allow read: if studyRead();
-      allow update: if studyUpdate(resource.data.researcher.id);
-      allow delete: if studyDelete(resource.data.researcher.id);
+      allow read: if readStudy(studyID)
+      allow create: if createStudy(studyID)
+      allow update: if updateStudy(studyID)
+      allow delete: if deleteStudy(studyID)
 
       match /surveys/{surveyID} {
-        allow read: if studySurveyRead();
-        allow create: if studySurveyCreate();
-        allow update: if studySurveyUpdate();
-        allow delete: if studySurveyDelete();
+        allow read: if readStudySurvey(studyID);
+        allow create: if createStudySurvey(studyID);
+        allow update: if updateStudySurvey(studyID);
+        allow delete: if deleteStudySurvey(studyID);
       }
 
       match /participants/{participantID} {
-        allow read: if studyParticipantRead(participantID, studyID);
-        allow create: if studyParticipantCreate(participantID);
-        allow update: if studyParticipantUpdate(studyID);
-        allow delete: if studyParticipantDelete(participantID, studyID);
+        allow read: if readStudyParticipant(studyID, participantID);
+        allow create: if createStudyParticipant(participantID);
+        allow update: if updateStudyParticipant(studyID);
+        allow delete: if deleteStudyParticipant(studyID);
 
         match /notes/{noteID} {
-          allow read: if studyParticipantNoteRead(studyID)
-          allow create: if studyParticipantNoteCreate(studyID)
-          allow update: if studyParticipantNoteUpdate(studyID)
-          allow delete: if studyParticipantNoteDelete(studyID)
+          allow read: if readStudyParticipantNote(studyID)
+          allow create: if createStudyParticipantNote(studyID)
+          allow update: if updateStudyParticipantNote(studyID)
+          allow delete: if deleteStudyParticipantNote(studyID)
         }
 
         match /messages/{messageID} {
-          allow read: if studyParticipantMessageRead(participantID, studyID);
-          allow create: if studyParticipantMessageCreate(participantID, studyID);
-          allow update: if studyParticipantMessageUpdate(participantID, studyID);
+          allow read: if readStudyParticipantMessage(studyID, participantID);
+          allow create: if createStudyParticipantMessage(studyID, participantID);
+          allow update: if updateStudyParticipantMessage(studyID, participantID);
+          allow delete: if deleteStudyParticipantMessage(studyID, participantID);
         }
     	}
     }
 
-    // match reminders
     match /reminders/{reminderID} {
-    	allow read: if reminderRead();
-    	allow create: if reminderCreate();
-    	allow update: if reminderUpdate();
-    	allow delete: if reminderDelete();
+    	allow read: if readReminder();
+    	allow create: if createReminder();
+    	allow update: if updateReminder();
+    	allow delete: if deleteReminder();
     }
 
     match /meetings/{meetingID} {
-    	allow read: if meetingRead();
-    	allow create: if meetingCreate();
-    	allow update: if meetingUpdate();
-    	allow delete: if meetingDelete();
+    	allow read: if readMeeting();
+    	allow create: if createMeeting();
+    	allow update: if updateMeeting();
+    	allow delete: if deleteMeeting();
     }
 
     match /feedback/{feedbackID} {
-    	allow create: if feedbackCreate();
+      allow read: if readFeedback();
+    	allow create: if createFeedback();
+    	allow update: if updateFeedback();
+    	allow delete: if deleteFeedback();
     }
   }
 }
