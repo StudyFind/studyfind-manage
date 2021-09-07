@@ -5,7 +5,8 @@ const sendEmail = require("../../__utils__/send-email");
 module.exports = async (snapshot) => {
   const researcherID = snapshot.id;
   const researcherName = snapshot.get("name");
-  const researcherEmail = snapshot.get("email");
+  const user = await auth.getUser(researcherID);
+  const researcherEmail = user.email;
 
   await auth.setCustomUserClaims(researcherID, { usertype: "researcher" });
 
