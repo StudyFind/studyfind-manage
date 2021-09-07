@@ -4,18 +4,18 @@ const sendEmail = require("../../__utils__/send-email");
 
 module.exports = async (snapshot) => {
   const researcherID = snapshot.id;
-  const researcherName = snapshot.get("name");
   const user = await auth.getUser(researcherID);
+  const researcherName = user.displayName;
   const researcherEmail = user.email;
 
-  await auth.setCustomUserClaims(researcherID, { usertype: "researcher" });
-
-  // TODO: Send welcome email, promise all
-  await sendEmail(
-    researcherEmail,
-    "Create researcher account subject",
-    "Create researcher account text"
-  );
+  await Promise.all([
+    auth.setCustomUserClaims(researcherID, { usertype: "researcher" }),
+    sendEmail(
+      researcherEmail,
+      "Create researcher account subject",
+      "Create researcher account text"
+    ),
+  ]);
 
   return firestore
     .collection("researchers")
