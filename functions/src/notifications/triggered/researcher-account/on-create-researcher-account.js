@@ -1,5 +1,6 @@
-const { auth, firestore } = require("admin");
+const { auth } = require("admin");
 const { CREATE_ACCOUNT } = require("../../__utils__/notification-codes");
+const { addResearcherNotification } = require("../../__utils__/database");
 const sendEmail = require("../../__utils__/send-email");
 
 module.exports = async (snapshot) => {
@@ -17,16 +18,10 @@ module.exports = async (snapshot) => {
     ),
   ]);
 
-  return firestore
-    .collection("researchers")
-    .doc(researcherID)
-    .collection("notifications")
-    .add({
-      code: CREATE_ACCOUNT,
-      time: Date.now(),
-      link: "",
-      title: "Researcher account created!",
-      description: `Your account has been successfully created as ${researcherName}!`,
-      read: false,
-    });
+  return addResearcherNotification(
+    researcherID,
+    CREATE_ACCOUNT,
+    "Researcher account created!",
+    `Your account has been successfully created as ${researcherName}!`
+  );
 };

@@ -15,20 +15,24 @@ const getStudyParticipant = async (studyID, participantID) => {
   );
 };
 
-const addParticipantNotification = (uid, code, meta) => {
-  firestore.collection("participants").doc(uid).add({
+const addParticipantNotification = (uid, code, title, description, link = "") => {
+  firestore.collection("participants").doc(uid).collection("notifications").add({
     code,
-    meta,
     time: Date.now(),
+    link,
+    title,
+    description,
     read: false,
   });
 };
 
-const addResearcherNotification = (uid, code, meta) => {
-  firestore.collection("researchers").doc(uid).add({
+const addResearcherNotification = (uid, code, title, description, link = "") => {
+  firestore.collection("researchers").doc(uid).collection("notifications").add({
     code,
-    meta,
     time: Date.now(),
+    link,
+    title,
+    description,
     read: false,
   });
 };
