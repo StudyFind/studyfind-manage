@@ -1,1 +1,1 @@
-// TODO: Send goodbye email
+//TODO use auth trigger instead? functions.auth.user().onDelete

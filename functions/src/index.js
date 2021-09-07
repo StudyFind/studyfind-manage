@@ -17,11 +17,9 @@ exports.welcomeAccount = functions.https.onCall(welcomeAccount);
 // ======== TRIGGERED ======== //
 // =========================== //
 const onCreateResearcherAccount = require("./notifications/triggered/researcher-account/on-create-researcher-account");
-const onUpdateResearcherAccount = require("./notifications/triggered/researcher-account/on-update-researcher-account");
 const onDeleteResearcherAccount = require("./notifications/triggered/researcher-account/on-delete-researcher-account");
 
 const onCreateParticipantAccount = require("./notifications/triggered/participant-account/on-create-participant-account");
-const onUpdateParticipantAccount = require("./notifications/triggered/participant-account/on-update-participant-account");
 const onDeleteParticipantAccount = require("./notifications/triggered/participant-account/on-delete-participant-account");
 
 const onCreateStudy = require("./notifications/triggered/study/on-create-study");
@@ -48,11 +46,9 @@ const studyParticipantsRef = functions.firestore.document(
 );
 
 exports.onCreateResearcherAccount = researchersRef.onCreate(onCreateResearcherAccount);
-exports.onUpdateResearcherAccount = researchersRef.onUpdate(onUpdateResearcherAccount);
 exports.onDeleteResearcherAccount = researchersRef.onDelete(onDeleteResearcherAccount);
 
 exports.onCreateParticipantAccount = participantsRef.onCreate(onCreateParticipantAccount);
-exports.onUpdateParticipantAccount = participantsRef.onUpdate(onUpdateParticipantAccount);
 exports.onDeleteParticipantAccount = participantsRef.onDelete(onDeleteParticipantAccount);
 
 exports.onCreateStudy = studiesRef.onCreate(onCreateStudy);
