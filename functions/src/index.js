@@ -34,7 +34,8 @@ const onCreateMeeting = require("./notifications/triggered/meeting/on-create-mee
 const onUpdateMeeting = require("./notifications/triggered/meeting/on-update-meeting");
 const onDeleteMeeting = require("./notifications/triggered/meeting/on-delete-meeting");
 
-const onNewParticipant = require("./notifications/triggered/study-participant/on-new-participant");
+const onParticipantEnrolled = require("./notifications/triggered/study-participant/on-participant-enrolled");
+const onResearcherChangedParticipantStatus = require("./notifications/triggered/study-participant/on-researcher-changed-participant-status");
 
 const researchersRef = functions.firestore.document("researchers/{researcherID}");
 const participantsRef = functions.firestore.document("participants/{participantID}");
@@ -63,7 +64,10 @@ exports.onCreateMeeting = meetingsRef.onCreate(onCreateMeeting);
 exports.onUpdateMeeting = meetingsRef.onUpdate(onUpdateMeeting);
 exports.onDeleteMeeting = meetingsRef.onDelete(onDeleteMeeting);
 
-exports.onNewParticipant = studyParticipantsRef.onCreate(onNewParticipant);
+exports.onParticipantEnrolled = studyParticipantsRef.onCreate(onParticipantEnrolled);
+exports.onResearcherChangedParticipantStatus = studyParticipantsRef.onUpdate(
+  onResearcherChangedParticipantStatus
+);
 
 // =========================== //
 // ======== SCHEDULED ======== //
