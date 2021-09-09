@@ -1,22 +1,25 @@
-const onTriggerReminder = require("./on-trigger-reminder");
-module.exports = async (snapshot) => onTriggerReminder(snapshot, "CREATE_REMINDER");
+const { auth } = require("admin");
+const { RESEARCHER_CREATED_REMINDER } = require("../../__utils__/notification-codes");
+const { getParticipant, addParticipantNotification } = require("../../__utils__/database");
+const sendEmail = require("../../__utils__/send-email");
 
-/*
+module.exports = async (snapshot) => {
+  const reminder = snapshot.data();
+  const { participantID, studyID, title } = reminder;
 
-Participant
------------
-title: "New Reminder"
-body: `The researcher from study ${meta.reminder.studyID} has created a new weekly reminder for you titled ${meta.reminder.title}`
-icon: FaClock
-color: "green.500"
-background: "green.100"
+  const participant = await getParticipant(participantID);
 
-Researcher
-----------
-title: "New Reminder"
-body: "You created a reminder for participant ${meta.studyParticipant.fakename} for study ${meta.reminder.studyID} titled ${meta.reminder.title}`
-icon: FaClock
-color: "green.500"
-background: "green.100"
+  if (participant?.notifications?.email) {
+    const user = await auth.getUser(participantID);
+    const participantEmail = user.email;
+    await sendEmail(participantEmail, "Create reminder subject", "Create reminder text");
+  }
 
-*/
+  return addParticipantNotification(
+    participantID,
+    RESEARCHER_CREATED_REMINDER,
+    "New Reminder",
+    `The researcher of study ${studyID} has set up a weekly reminder for you called ${title}.`,
+    `/mystudies/${studyID}/reminders`
+  );
+};

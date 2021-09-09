@@ -1,22 +1,25 @@
-const onTriggerReminder = require("./on-trigger-reminder");
-module.exports = async (snapshot) => onTriggerReminder(snapshot, "DELETE_REMINDER");
+const { auth } = require("admin");
+const { RESEARCHER_DELETED_REMINDER } = require("../../__utils__/notification-codes");
+const { getParticipant, addParticipantNotification } = require("../../__utils__/database");
+const sendEmail = require("../../__utils__/send-email");
 
-/*
+module.exports = async (snapshot) => {
+  const reminder = snapshot.data();
+  const { participantID, studyID, title } = reminder;
 
-Participant
------------
-title: "Reminder Deleted"
-body: `The researcher from study ${meta.reminder.studyID} has deleted the weekly reminder titled ${meta.reminder.title}`
-icon: FaClock
-color: "red.500"
-background: "red.100"
+  const participant = await getParticipant(participantID);
 
-Researcher
-----------
-title: "Reminder Deleted"
-body: "You deleted a reminder for participant ${meta.studyParticipant.fakename} for study ${meta.reminder.studyID} titled ${meta.reminder.title}`
-icon: FaClock
-color: "red.500"
-background: "red.100"
+  if (participant?.notifications?.email) {
+    const user = await auth.getUser(participantID);
+    const participantEmail = user.email;
+    await sendEmail(participantEmail, "Delete reminder subject", "Delete reminder text");
+  }
 
-*/
+  return addParticipantNotification(
+    participantID,
+    RESEARCHER_DELETED_REMINDER,
+    "Reminder Deleted",
+    `The researcher of study ${studyID} has deleted your weekly reminder called ${title}.`,
+    `/mystudies/${studyID}/reminders`
+  );
+};

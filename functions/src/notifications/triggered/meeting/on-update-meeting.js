@@ -30,9 +30,9 @@ module.exports = async (change) => {
       participantID,
       RESEARCHER_UPDATED_MEETING,
       "Meeting Updated",
-      `The researcher of study ${studyID} has set updated a meeting with you at ${moment(
-        time
-      ).format("LLL")}.`,
+      `The researcher of study ${studyID} has updated a meeting with you at ${moment(time).format(
+        "LLL"
+      )}.`,
       `/mystudies/${studyID}/meetings`
     );
   }
@@ -44,7 +44,7 @@ module.exports = async (change) => {
     if (researcher?.notifications?.email) {
       const user = await auth.getUser(researcherID);
       const researcherEmail = user.email;
-      await sendEmail(researcherEmail, "Update meeting subject", "Udate meeting text");
+      await sendEmail(researcherEmail, "Update meeting subject", "Update meeting text");
     }
 
     addResearcherNotification(
