@@ -5,7 +5,7 @@ const { getResearcher, addResearcherNotification } = require("../../__utils__/da
 const sendEmail = require("../../__utils__/send-email");
 
 module.exports = async (snapshot, context) => {
-  const participantFakename = snapshot.get("fakename");
+  const participantID = snapshot.id;
 
   const { studyID } = context.params;
   const study = await getDocument(firestore.collection("studies").doc(studyID));
@@ -23,7 +23,7 @@ module.exports = async (snapshot, context) => {
     researcherID,
     PARTICIPANT_ENROLLED,
     "New participant enrollment",
-    `Participant ${participantFakename} has enrolled in your study ${studyID}!`,
+    `Participant ${participantID} has enrolled in your study ${studyID}!`,
     `/study/${studyID}/participants`
   );
 };
