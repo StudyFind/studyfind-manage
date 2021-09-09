@@ -23,7 +23,6 @@ const onCreateParticipantAccount = require("./notifications/triggered/participan
 const onDeleteParticipantAccount = require("./notifications/triggered/participant-account/on-delete-participant-account");
 
 const onCreateStudy = require("./notifications/triggered/study/on-create-study");
-const onUpdateStudy = require("./notifications/triggered/study/on-update-study");
 const onDeleteStudy = require("./notifications/triggered/study/on-delete-study");
 
 const onCreateReminder = require("./notifications/triggered/reminder/on-create-reminder");
@@ -53,7 +52,6 @@ exports.onCreateParticipantAccount = participantsRef.onCreate(onCreateParticipan
 exports.onDeleteParticipantAccount = participantsRef.onDelete(onDeleteParticipantAccount);
 
 exports.onCreateStudy = studiesRef.onCreate(onCreateStudy);
-exports.onUpdateStudy = studiesRef.onUpdate(onUpdateStudy);
 exports.onDeleteStudy = studiesRef.onDelete(onDeleteStudy);
 
 exports.onCreateReminder = remindersRef.onCreate(onCreateReminder);

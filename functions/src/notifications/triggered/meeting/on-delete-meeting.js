@@ -1,23 +1,28 @@
-const onTriggerMeeting = require("./on-trigger-meeting");
-module.exports = async (snapshot) => onTriggerMeeting(snapshot, "DELETE_MEETING");
+const { auth } = require("admin");
+const moment = require("moment");
+const { RESEARCHER_DELETED_MEETING } = require("../../__utils__/notification-codes");
+const { getParticipant, addParticipantNotification } = require("../../__utils__/database");
+const sendEmail = require("../../__utils__/send-email");
 
-/*
+module.exports = async (snapshot) => {
+  const meeting = snapshot.data();
+  const { participantID, studyID, time } = meeting;
 
-Participant
------------
-title: "Meeting Deleted"
-body: `The researcher from study ${meta.meeting.studyID} has deleted a meeting with you at ${moment(meta.meeting.time).format("LLL")}`
-icon: FaCalendarTimes
-color: "red.500"
-background: "red.100"
-link: "https://researcher.studyfind.org/study/${studyID}/participant/${participantID}"
+  const participant = await getParticipant(participantID);
 
-Researcher
-----------
-title: "Meeting Deleted"
-body: `You deleted a meeting with participant ${meta.studyParticipant.fakename} for study ${meta.meeting.studyID} at ${moment(meta.meeting.time).format("LLL")}`
-icon: FaCalendarTimes
-color: "red.500"
-background: "red.100"
+  if (participant?.notifications?.email) {
+    const user = await auth.getUser(participantID);
+    const participantEmail = user.email;
+    await sendEmail(participantEmail, "Delete meeting subject", "Delete meeting text");
+  }
 
-*/
+  return addParticipantNotification(
+    participantID,
+    RESEARCHER_DELETED_MEETING,
+    "Meeting Deleted",
+    `The researcher of study ${studyID} has deleted a meeting with you at ${moment(time).format(
+      "LLL"
+    )}.`,
+    `/mystudies/${studyID}/meetings`
+  );
+};

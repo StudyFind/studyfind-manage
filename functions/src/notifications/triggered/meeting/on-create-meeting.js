@@ -1,22 +1,28 @@
-const onTriggerMeeting = require("./on-trigger-meeting");
-module.exports = async (snapshot) => onTriggerMeeting(snapshot, "CREATE_MEETING");
+const { auth } = require("admin");
+const moment = require("moment");
+const { RESEARCHER_CREATED_MEETING } = require("../../__utils__/notification-codes");
+const { getParticipant, addParticipantNotification } = require("../../__utils__/database");
+const sendEmail = require("../../__utils__/send-email");
 
-/*
+module.exports = async (snapshot) => {
+  const meeting = snapshot.data();
+  const { participantID, studyID, time } = meeting;
 
-Participant
------------
-title: "New Meeting"
-body: `The researcher from study ${meta.meeting.studyID} has set up a meeting with you at ${moment(meta.meeting.time).format("LLL")}`
-icon: FaCalendarPlus
-color: "green.500"
-background: "green.100"
+  const participant = await getParticipant(participantID);
 
-Researcher
-----------
-title: "New Meeting"
-body: `You created a meeting with participant ${meta.studyParticipant.fakename} for study ${meta.meeting.studyID} at ${moment(meta.meeting.time).format("LLL")}`
-icon: FaCalendarPlus
-color: "green.500"
-background: "green.100"
+  if (participant?.notifications?.email) {
+    const user = await auth.getUser(participantID);
+    const participantEmail = user.email;
+    await sendEmail(participantEmail, "Create meeting subject", "Create meeting text");
+  }
 
-*/
+  return addParticipantNotification(
+    participantID,
+    RESEARCHER_CREATED_MEETING,
+    "New Meeting",
+    `The researcher of study ${studyID} has set up a meeting with you at ${moment(time).format(
+      "LLL"
+    )}.`,
+    `/mystudies/${studyID}/meetings`
+  );
+};
