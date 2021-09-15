@@ -23,6 +23,32 @@ module.exports = async (snap, context) => {
     .catch(() => {
       return false;
     });
+
+  const m = firestore.collection("meetings").where("researcherID", "==", uid);
+     //3. iterate through studies in the query and delete them
+  m.get()
+    .then((querySnapshot) => {
+     querySnapshot.forEach((doc) => {
+        doc.ref.delete();
+      });
+    return true;
+    })
+    .catch(() => {
+      return false;
+    });
+   
+  const r = firestore.collection("reminders").where("researcherID", "==", uid);
+   //3. iterate through studies in the query and delete them
+   r.get()
+     .then((querySnapshot) => {
+       querySnapshot.forEach((doc) => {
+         doc.ref.delete();
+       });
+       return true;
+     })
+     .catch(() => {
+       return false;
+     });
 };
 
 // TODO: Send goodbye email
