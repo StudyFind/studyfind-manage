@@ -1,4 +1,6 @@
-# Firebase Functions Directory `./functions`
+# StudyFind Cloud Functions
+
+<!-- # Firebase Functions Directory `./functions`
 
 Last updated: Dec 7 2020
 
@@ -22,4 +24,4 @@ These should be all run from the root folder
 * `src/utils/switch-list.js` holds a list of all other (not switch) http functions, that the switch then chooses from. If you want to add a new http function, register it here, and not in `index.js`. It will be added through the switch.
 * `src/firebase/` contains firebase functions. NOTE, these are not inlined because it is impossible to run tests without mocking them
 * `src/utils/` contains other utility functions, such as generate-survey
-* `__mocks__/` directories are present to hold mock files to ease testing
+* `__mocks__/` directories are present to hold mock files to ease testing -->
