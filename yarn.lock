@@ -2600,10 +2600,10 @@
   dependencies:
     "@sinonjs/commons" "^1.7.0"
 
-"@studyfind/components@^1.0.4":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@studyfind/components/-/components-1.0.4.tgz#bda1fff5a4a7c53a84ea62d7a52d14515d9b49ac"
-  integrity sha512-6p2Sp6+wuiO4TtSW8NO1gPIE/wJG1L0cDinAV72OS0bxAURL+06z5wbpRBZKTN6QvxKRoXgHAYUZcyQe32NShw==
+"@studyfind/components@^1.0.5":
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/@studyfind/components/-/components-1.0.5.tgz#0af50a22970c3b82bb25bfa557890be7c13b6700"
+  integrity sha512-8C+guMSG6tlsr9L4PLyHQ7V/WLmXVzWWSRCBXgbognNtF61Hxos94rh/N2RYjOsGwVaPiCLkuuAzAfbtaePiyw==
 
 "@studyfind/firebase@^0.2.9":
   version "0.2.9"

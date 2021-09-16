@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Flex, Spinner } from "@chakra-ui/react";
 import { Message } from "@studyfind/components";
 import { useFirebase } from "@studyfind/firebase";
