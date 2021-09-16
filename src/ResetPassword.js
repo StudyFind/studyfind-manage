@@ -1,10 +1,7 @@
 import React, { useState } from "react";
-import { auth } from "database/firebase";
 import { Grid, Heading, Button } from "@chakra-ui/react";
-
-import Message from "./Message";
-import Input from "./Input";
-import Form from "./Form";
+import { Message, TextInput, Form } from "@studyfind/components";
+import { useFirebase } from "@studyfind/firebase";
 
 function ResetPassword({ code }) {
   const [show, setShow] = useState(false);
@@ -12,6 +9,7 @@ function ResetPassword({ code }) {
   const [errors, setErrors] = useState({ password: "" });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(null);
+  const { auth } = useFirebase();
 
   const handleToggle = () => {
     setShow((show) => !show);
@@ -72,7 +70,7 @@ function ResetPassword({ code }) {
         <Heading fontSize="1.75rem" mb="6px" color="blue.500" textAlign="center">
           Reset Password
         </Heading>
-        <Input
+        <TextInput
           size="lg"
           name="password"
           value={inputs.password}
