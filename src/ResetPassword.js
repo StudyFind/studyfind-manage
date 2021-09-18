@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { Grid, Heading, Button } from "@chakra-ui/react";
-import { Card, Form, Message, TextInput } from "@studyfind/components";
 import { useFirebase } from "@studyfind/firebase";
+
 import { validate } from "@studyfind/utils";
+
+import { Card, Form, Message, PasswordInput } from "@studyfind/components";
+import { Grid, Heading, Button } from "@chakra-ui/react";
 
 function ResetPassword({ code }) {
   const [show, setShow] = useState(false);
@@ -10,7 +12,9 @@ function ResetPassword({ code }) {
   const [errors, setErrors] = useState({ password: "" });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(null);
+
   const { auth } = useFirebase();
+
   const handleToggle = () => {
     setShow((show) => !show);
   };
@@ -60,20 +64,13 @@ function ResetPassword({ code }) {
           <Heading fontSize="1.75rem" mb="6px" color="blue.500" textAlign="center">
             Reset Password
           </Heading>
-          <TextInput
+          <PasswordInput
             size="lg"
             name="password"
             value={inputs.password}
             error={errors.password}
             onChange={handleChange}
             placeholder="Password"
-            type={show ? "text" : "password"}
-            rightWidth="5rem"
-            right={
-              <Button color="gray.500" size="sm" onClick={handleToggle}>
-                {show ? "Hide" : "Show"}
-              </Button>
-            }
           />
           <Button size="lg" colorScheme="blue" type="submit" isLoading={loading}>
             Confirm Reset Password

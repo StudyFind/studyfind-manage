@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Flex, Spinner } from "@chakra-ui/react";
-import { Message } from "@studyfind/components";
 import { useFirebase } from "@studyfind/firebase";
+
+import { Message } from "@studyfind/components";
+import { Flex, Spinner } from "@chakra-ui/react";
 
 function VerifyEmail({ code }) {
   const [success, setSuccess] = useState(null);
