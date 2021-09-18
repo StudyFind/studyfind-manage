@@ -7,17 +7,12 @@ import { Card, Form, Message, PasswordInput } from "@studyfind/components";
 import { Grid, Heading, Button } from "@chakra-ui/react";
 
 function ResetPassword({ code }) {
-  const [show, setShow] = useState(false);
   const [inputs, setInputs] = useState({ password: "" });
   const [errors, setErrors] = useState({ password: "" });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(null);
 
   const { auth } = useFirebase();
-
-  const handleToggle = () => {
-    setShow((show) => !show);
-  };
 
   const handleChange = (_, value) => {
     setInputs({ password: value });
