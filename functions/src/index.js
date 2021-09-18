@@ -46,10 +46,10 @@ const studyParticipantsRef = functions.firestore.document(
 );
 
 exports.onCreateResearcherAccount = researchersRef.onCreate(onCreateResearcherAccount);
-exports.onDeleteResearcherAccount = researchersRef.onDelete(onDeleteResearcherAccount);
-
 exports.onCreateParticipantAccount = participantsRef.onCreate(onCreateParticipantAccount);
-exports.onDeleteParticipantAccount = participantsRef.onDelete(onDeleteParticipantAccount);
+
+exports.onDeleteResearcherAccount = functions.auth.user().onDelete(onDeleteParticipantAccount);
+exports.onDeleteParticipantAccount = functions.auth.user().onDelete(onDeleteResearcherAccount);
 
 exports.onCreateStudy = studiesRef.onCreate(onCreateStudy);
 exports.onDeleteStudy = studiesRef.onDelete(onDeleteStudy);
