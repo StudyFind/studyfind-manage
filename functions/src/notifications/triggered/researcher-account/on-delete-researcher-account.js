@@ -5,11 +5,10 @@ module.exports = async (snap, context) => {
 
   //1. Get doc id to determine which studies to delete
   //const data = snap.data();
-  const uid = snap.id;
-  //2. create a query that selects documents owned by that id
 
-  // const studiesRef = collection(firestore, "studies");
-  // const q = query(studiesRef, where("researcher.id", "==", uid));
+  const uid = snap.id;
+
+  //2. create a query that selects documents owned by that id
 
   const q = firestore.collection("studies").where("researcher.id", "==", uid);
   //3. iterate through studies in the query and delete them
@@ -25,30 +24,28 @@ module.exports = async (snap, context) => {
     });
 
   const m = firestore.collection("meetings").where("researcherID", "==", uid);
-     //3. iterate through studies in the query and delete them
   m.get()
     .then((querySnapshot) => {
-     querySnapshot.forEach((doc) => {
+      querySnapshot.forEach((doc) => {
         doc.ref.delete();
       });
-    return true;
+      return true;
     })
     .catch(() => {
       return false;
     });
-   
+
   const r = firestore.collection("reminders").where("researcherID", "==", uid);
-   //3. iterate through studies in the query and delete them
-   r.get()
-     .then((querySnapshot) => {
-       querySnapshot.forEach((doc) => {
-         doc.ref.delete();
-       });
-       return true;
-     })
-     .catch(() => {
-       return false;
-     });
+  r.get()
+    .then((querySnapshot) => {
+      querySnapshot.forEach((doc) => {
+        doc.ref.delete();
+      });
+      return true;
+    })
+    .catch(() => {
+      return false;
+    });
 };
 
 // TODO: Send goodbye email
