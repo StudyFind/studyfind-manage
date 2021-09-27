@@ -1,27 +1,29 @@
 const onTriggerStudy = require("./on-trigger-study");
 const { firestore } = require("admin");
-module.exports = async (snapshot) => {
+module.exports = async (snapshot, context) => {
   onTriggerStudy(snapshot, "CREATE_STUDY");
   const uid = snapshot.id;
 
   const q = firestore.collection("participants").where("enrolled", "array-contains", uid);
-  q.get()
+  const promise = await q
+    .get()
     .then((querySnapshot) => {
       querySnapshot.forEach((doc) => {
         const ref = doc.ref;
-        const arr = doc.get();
+        const dat = doc.data();
+        const arr = dat.enrolled;
+
         const index = arr.indexOf(uid);
         if (index > -1) {
           arr.splice(index, 1);
         }
-        ref.set(arr);
+        return ref.set(arr);
       });
-      return true;
+      return null;
     })
     .catch(() => {
-      return false;
+      return promise;
     });
-  return true;
 };
 
 /*
