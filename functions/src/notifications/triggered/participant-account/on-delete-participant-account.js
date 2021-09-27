@@ -34,5 +34,15 @@ module.exports = async (snapshot, context) => {
     .catch(() => {
       return false;
     });
+
+  const dat = snapshot.data();
+  const studies = dat["enrolled"];
+
+  await Promise.allSettled(
+    studies.map((study) => {
+      firestore.collection("studies").doc(study).collection("participants").doc(uid).delete();
+      return null;
+    })
+  );
 };
 // TODO: Send goodbye email
