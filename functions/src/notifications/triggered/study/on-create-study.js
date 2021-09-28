@@ -20,7 +20,7 @@ module.exports = async (snapshot) => {
     researcherID,
     CREATE_STUDY,
     "New Study",
-    `You created a new study: ${study.title}`,
+    `${study.title} has been created.`,
     `/study/${studyID}/details`
   );
 };

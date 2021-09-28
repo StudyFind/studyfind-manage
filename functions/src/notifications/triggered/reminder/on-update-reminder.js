@@ -57,7 +57,7 @@ module.exports = async (change) => {
       researcherID,
       PARTICIPANT_CONFIRMED_REMINDER,
       "Reminder confirmed",
-      `Participant ${participantID} has confirmed their reminder called ${title}.`,
+      `${participantName}${participantID} confirmed ${title} reminder.`,
       `/study/${studyID}/participants/reminders/${participantID}`
     );
   }

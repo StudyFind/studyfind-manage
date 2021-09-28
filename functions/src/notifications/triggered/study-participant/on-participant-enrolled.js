@@ -23,7 +23,7 @@ module.exports = async (snapshot, context) => {
     researcherID,
     PARTICIPANT_ENROLLED,
     "New participant enrollment",
-    `Participant ${participantID} has enrolled in your study ${studyID}!`,
+    `${participantID} has enrolled in ${studyID}!`,
     `/study/${studyID}/participants`
   );
 };

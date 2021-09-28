@@ -22,6 +22,6 @@ module.exports = async (snapshot) => {
     researcherID,
     CREATE_ACCOUNT,
     "Researcher account created!",
-    `Your account has been successfully created as ${researcherName}!`
+    `Hello ${researcherName}! Welcome to StudyFind!`
   );
 };

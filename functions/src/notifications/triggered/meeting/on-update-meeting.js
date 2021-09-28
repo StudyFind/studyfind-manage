@@ -51,7 +51,7 @@ module.exports = async (change) => {
       researcherID,
       PARTICIPANT_CONFIRMED_MEETING,
       "Meeting confirmed",
-      `Participant ${participantID} has confirmed your meeting with them at ${moment(time).format(
+      `${participantID} has confirmed your meeting at ${moment(time).format(
         "LLL"
       )}.`,
       `/study/${studyID}/participants/meetings/${participantID}`

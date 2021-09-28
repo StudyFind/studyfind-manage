@@ -20,6 +20,6 @@ module.exports = async (snapshot) => {
     researcherID,
     DELETE_STUDY,
     "Study Deleted",
-    `You deleted study ${studyID}.`
+    `${studyID} has been deleted.`
   );
 };
