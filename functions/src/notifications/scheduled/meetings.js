@@ -1,9 +1,11 @@
-const moment = require("moment-timezone");
+const { auth } = require("admin");
 
 const { firestore } = require("admin");
 const { getDocument, getCollection } = require("utils");
-
-const { MEETING } = require("../__utils__/notification-codes");
+const { MEETING_NOW } = require("../__utils__/notification-codes");
+const { addParticipantNotification, addResearcherNotification } = require("../__utils__/database");
+const sendEmail = require("../__utils__/send-email");
+const sendPhone = require("../__utils__/send-phone");
 
 const getCurrentTimeRoundedTo30Minutes = () => {
   const MILLIS_UTC_NOW = Date.now();
@@ -25,7 +27,7 @@ module.exports = async () => {
 
   return Promise.allSettled(
     meetings.map(async (meeting) => {
-      const { studyID, researcherID, participantID } = meeting;
+      const { studyID, researcherID, participantID, link } = meeting;
 
       const researcherRef = firestore.collection("researchers").doc(researcherID);
       const participantRef = firestore.collection("participants").doc(participantID);
@@ -34,10 +36,11 @@ module.exports = async () => {
         .doc(studyID)
         .participants(participantID);
 
-      const [researcher, participant, studyParticipant] = await Promise.all([
+      const [researcher, participant, studyParticipant, researcherUser] = await Promise.all([
         getDocument(researcherRef),
         getDocument(participantRef),
         getDocument(studyParticipantRef),
+        auth.getUser(researcherID),
       ]);
 
       const participantFakename = studyParticipant.fakename;
@@ -45,26 +48,66 @@ module.exports = async () => {
       if (!researcher) throw Error(`Referenced researcher ${researcherID} does not exist`);
       if (!participant) throw Error(`Referenced participant ${participantID} does not exist`);
 
-      const participantTime = moment(roundedTime).tz(participant.timezone).format("h:mma");
-      const researcherTime = moment(roundedTime).tz(researcher.timezone).format("h:mma");
+      const participantSubject = `Upcoming Meeting`;
+      const participantText = `You have a meeting with ${researcherUser.displayName} in 30 minutes: ${link}`;
+      const researcherSubject = `Upcoming Meeting`;
+      const researcherText = `Your meeting with ${participantFakename} from study ${studyID} is in 30 minutes: ${link}`;
 
-      const researcherNotification = {
-        title: `Meeting ${meeting.title} at ${researcherTime}`,
-        body: `You have a upcoming meeting with participant ${participantFakename} for study ${studyID} in 30 minutes`,
-        code: MEETING,
-        time: Date.now(),
-        meta: { participantID, meetingID: meeting.id },
-      };
+      if (participant.notifications?.email) {
+        const user = await auth.getUser(participantID);
+        const participantEmail = user.email;
+        await sendEmail(
+          participantEmail,
+          participantSubject,
+          `${participantText}\n To unsubscribe from these notifications, please visit: https://studyfind.org/account/notifications/`
+        );
+      }
 
-      const participantNotification = {
-        title: `Meeting ${meeting.title} at ${participantTime}`,
-        body: `You have a upcoming meeting with researcher ${researcher.name} for study ${studyID} in 30 minutes`,
-        code: MEETING,
-        time: Date.now(),
-        meta: { participantID, meetingID: meeting.id },
-      };
+      if (participant.notifications?.phone) {
+        const participantPhone = participant.phone;
+        participantPhone &&
+          /\d\d\d\d\d\d\d\d\d\d/.test(participantPhone) &&
+          (await sendPhone(
+            `+1${participantPhone}`,
+            `${participantText}\n To unsubscribe visit: https://studyfind.org/account/notifications/`
+          ));
+      }
 
-      await Promise.all([sendResearcherNotification(), sendParticipantNotification()]);
+      if (researcher.notifications?.email) {
+        const researcherEmail = researcherUser.email;
+        await sendEmail(
+          researcherEmail,
+          researcherSubject,
+          `${researcherText}\n To unsubscribe from these notifications, please visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
+        );
+      }
+
+      if (researcher.notifications?.phone) {
+        const researcherPhone = researcher.phone;
+        researcherPhone &&
+          /\d\d\d\d\d\d\d\d\d\d/.test(researcherPhone) &&
+          (await sendPhone(
+            `+1${researcherPhone}`,
+            `${researcherText}\n To unsubscribe visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
+          ));
+      }
+
+      await Promise.all(
+        addParticipantNotification(
+          participantID,
+          MEETING_NOW,
+          participantSubject,
+          participantText,
+          link
+        ),
+        addResearcherNotification(
+          researcherID,
+          MEETING_NOW,
+          researcherSubject,
+          researcherText,
+          link
+        )
+      );
     })
   );
 };
