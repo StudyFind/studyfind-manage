@@ -20,7 +20,7 @@ module.exports = async (change, context) => {
     await sendEmail(
       participantEmail,
       subject,
-      `${text}: ${`/mystudies/${studyID}/`}\n To unsubscribe from these notifications, please visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
+      `${text}: ${`https://studyfind.org/mystudies/${studyID}/`}\n To unsubscribe from these notifications, please visit: https://studyfind.org/account/notifications/`
     );
   }
 
@@ -30,7 +30,7 @@ module.exports = async (change, context) => {
       /\d\d\d\d\d\d\d\d\d\d/.test(participantPhone) &&
       (await sendPhone(
         `+1${participantPhone}`,
-        `${text}: ${`/mystudies/${studyID}/`}\n To unsubscribe visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
+        `${text}: ${`https://studyfind.org/mystudies/${studyID}/`}\n To unsubscribe visit: https://studyfind.org/account/notifications/`
       ));
   }
 

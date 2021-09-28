@@ -19,7 +19,7 @@ module.exports = async (change) => {
   const after = change.after.data();
 
   if (before.name !== after.name || before.link !== after.link || before.time !== after.time) {
-    const { participantID, researcherID, studyID, time } = after;
+    const { participantID, researcherID, time } = after;
     const participant = await getParticipant(participantID);
     const researcherUser = await auth.getUser(researcherID);
 
@@ -34,7 +34,7 @@ module.exports = async (change) => {
       await sendEmail(
         participantEmail,
         subject,
-        `${text}: ${`/mystudies/${studyID}/meetings`}\n To unsubscribe from these notifications, please visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
+        `${text}: ${after.link}\n To unsubscribe from these notifications, please visit: https://studyfind.org/account/notifications/`
       );
     }
 
@@ -44,7 +44,7 @@ module.exports = async (change) => {
         /\d\d\d\d\d\d\d\d\d\d/.test(participantPhone) &&
         (await sendPhone(
           `+1${participantPhone}`,
-          `${text}: ${`/mystudies/${studyID}/meetings`}\n To unsubscribe visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
+          `${text}: ${after.link}\n To unsubscribe visit: https://studyfind.org/account/notifications/`
         ));
     }
 
@@ -53,7 +53,7 @@ module.exports = async (change) => {
       RESEARCHER_UPDATED_MEETING,
       subject,
       text,
-      `/mystudies/${studyID}/meetings`
+      after.link
     );
   }
 
@@ -75,7 +75,7 @@ module.exports = async (change) => {
       await sendEmail(
         researcherEmail,
         subject,
-        `${text}: ${`/study/${studyID}/participants/meetings/${participantID}`}\n To unsubscribe from these notifications, please visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
+        `${text}: ${after.link}\n To unsubscribe from these notifications, please visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
       );
     }
 
@@ -85,7 +85,7 @@ module.exports = async (change) => {
         /\d\d\d\d\d\d\d\d\d\d/.test(researcherPhone) &&
         (await sendPhone(
           `+1${researcherPhone}`,
-          `${text}: ${`/study/${studyID}/participants/meetings/${participantID}`}\n To unsubscribe visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
+          `${text}: ${after.link}\n To unsubscribe visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
         ));
     }
 
@@ -94,7 +94,7 @@ module.exports = async (change) => {
       PARTICIPANT_CONFIRMED_MEETING,
       subject,
       text,
-      `/study/${studyID}/participants/meetings/${participantID}`
+      after.link
     );
   }
 };

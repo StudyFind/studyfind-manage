@@ -22,7 +22,7 @@ module.exports = async (snapshot) => {
     await sendEmail(
       participantEmail,
       subject,
-      `${text}\n To unsubscribe from these notifications, please visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
+      `${text}\n To unsubscribe from these notifications, please visit: https://studyfind.org/account/notifications/`
     );
   }
 
@@ -32,7 +32,7 @@ module.exports = async (snapshot) => {
       /\d\d\d\d\d\d\d\d\d\d/.test(participantPhone) &&
       (await sendPhone(
         `+1${participantPhone}`,
-        `${text}\n To unsubscribe visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
+        `${text}\n To unsubscribe visit: https://studyfind.org/account/notifications/`
       ));
   }
 

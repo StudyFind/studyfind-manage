@@ -19,7 +19,7 @@ module.exports = async (snapshot) => {
     await sendEmail(
       participantEmail,
       subject,
-      `${text}: ${`/mystudies/${studyID}/reminders`}\n To unsubscribe from these notifications, please visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
+      `${text}: ${`https://studyfind.org/mystudies/${studyID}/reminders/`}\n To unsubscribe from these notifications, please visit: https://studyfind.org/account/notifications/`
     );
   }
 
@@ -29,7 +29,7 @@ module.exports = async (snapshot) => {
       /\d\d\d\d\d\d\d\d\d\d/.test(participantPhone) &&
       (await sendPhone(
         `+1${participantPhone}`,
-        `${text}: ${`/mystudies/${studyID}/reminders`}\n To unsubscribe visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
+        `${text}: ${`https://studyfind.org/mystudies/${studyID}/reminders/`}\n To unsubscribe visit: https://studyfind.org/account/notifications/`
       ));
   }
 
@@ -38,6 +38,6 @@ module.exports = async (snapshot) => {
     RESEARCHER_CREATED_REMINDER,
     subject,
     text,
-    `/mystudies/${studyID}/reminders`
+    `/mystudies/${studyID}/reminders/`
   );
 };

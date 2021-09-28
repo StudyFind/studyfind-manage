@@ -41,7 +41,7 @@ module.exports = async (change) => {
       await sendEmail(
         participantEmail,
         subject,
-        `${text}: ${`/mystudies/${studyID}/reminders`}\n To unsubscribe from these notifications, please visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
+        `${text}: ${`https://studyfind.org/mystudies/${studyID}/reminders/`}\n To unsubscribe from these notifications, please visit: https://studyfind.org/account/notifications/`
       );
     }
 
@@ -51,7 +51,7 @@ module.exports = async (change) => {
         /\d\d\d\d\d\d\d\d\d\d/.test(participantPhone) &&
         (await sendPhone(
           `+1${participantPhone}`,
-          `${text}: ${`/mystudies/${studyID}/reminders`}\n To unsubscribe visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
+          `${text}: ${`https://studyfind.org/mystudies/${studyID}/reminders/`}\n To unsubscribe visit: https://studyfind.org/account/notifications/`
         ));
     }
 
@@ -60,7 +60,7 @@ module.exports = async (change) => {
       RESEARCHER_UPDATED_REMINDER,
       subject,
       text,
-      `/mystudies/${studyID}/reminders`
+      `/mystudies/${studyID}/reminders/`
     );
   }
 
@@ -78,7 +78,7 @@ module.exports = async (change) => {
       await sendEmail(
         researcherEmail,
         subject,
-        `${text}: ${`/study/${studyID}/participants/reminders/${participantID}`}\n To unsubscribe from these notifications, please visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
+        `${text}: ${`https://studyfind-researcher.firebaseapp.com/study/${studyID}/participants/reminders/${participantID}/`}\n To unsubscribe from these notifications, please visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
       );
     }
 
@@ -88,7 +88,7 @@ module.exports = async (change) => {
         /\d\d\d\d\d\d\d\d\d\d/.test(researcherPhone) &&
         (await sendPhone(
           `+1${researcherPhone}`,
-          `${text}: ${`/study/${studyID}/participants/reminders/${participantID}`}\n To unsubscribe visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
+          `${text}: ${`https://studyfind-researcher.firebaseapp.com/study/${studyID}/participants/reminders/${participantID}/`}\n To unsubscribe visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
         ));
     }
 
@@ -97,7 +97,7 @@ module.exports = async (change) => {
       PARTICIPANT_CONFIRMED_REMINDER,
       subject,
       text,
-      `/study/${studyID}/participants/reminders/${participantID}`
+      `/study/${studyID}/participants/reminders/${participantID}/`
     );
   }
 };

@@ -7,7 +7,7 @@ const sendPhone = require("../../__utils__/send-phone");
 
 module.exports = async (snapshot) => {
   const meeting = snapshot.data();
-  const { participantID, researcherID, studyID, time } = meeting;
+  const { participantID, researcherID, time, link } = meeting;
   const participant = await getParticipant(participantID);
   const researcherUser = await auth.getUser(researcherID);
 
@@ -22,7 +22,7 @@ module.exports = async (snapshot) => {
     await sendEmail(
       participantEmail,
       subject,
-      `${text}: ${`/mystudies/${studyID}/meetings`}\n To unsubscribe from these notifications, please visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
+      `${text}: ${link}\n To unsubscribe from these notifications, please visit: https://studyfind.org/account/notifications/`
     );
   }
 
@@ -32,15 +32,9 @@ module.exports = async (snapshot) => {
       /\d\d\d\d\d\d\d\d\d\d/.test(participantPhone) &&
       (await sendPhone(
         `+1${participantPhone}`,
-        `${text}: ${`/mystudies/${studyID}/meetings`}\n To unsubscribe visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
+        `${text}: ${link}\n To unsubscribe visit: https://studyfind.org/account/notifications/`
       ));
   }
 
-  return addParticipantNotification(
-    participantID,
-    RESEARCHER_CREATED_MEETING,
-    subject,
-    text,
-    `/mystudies/${studyID}/meetings`
-  );
+  return addParticipantNotification(participantID, RESEARCHER_CREATED_MEETING, subject, text, link);
 };

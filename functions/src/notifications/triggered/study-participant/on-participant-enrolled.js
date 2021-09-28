@@ -21,7 +21,7 @@ module.exports = async (snapshot, context) => {
     await sendEmail(
       researcherEmail,
       subject,
-      `${text}: ${`/study/${studyID}/participants`}\n To unsubscribe from these notifications, please visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
+      `${text}: ${`https://studyfind-researcher.firebaseapp.com/study/${studyID}/participants/`}\n To unsubscribe from these notifications, please visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
     );
   }
 
@@ -31,7 +31,7 @@ module.exports = async (snapshot, context) => {
       /\d\d\d\d\d\d\d\d\d\d/.test(researcherPhone) &&
       (await sendPhone(
         `+1${researcherPhone}`,
-        `${text}: ${`/study/${studyID}/participants`}\n To unsubscribe visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
+        `${text}: ${`https://studyfind-researcher.firebaseapp.com/study/${studyID}/participants/`}\n To unsubscribe visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
       ));
   }
 
@@ -40,6 +40,6 @@ module.exports = async (snapshot, context) => {
     PARTICIPANT_ENROLLED,
     subject,
     text,
-    `/study/${studyID}/participants`
+    `/study/${studyID}/participants/`
   );
 };
