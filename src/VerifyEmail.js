@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from "react";
-import { auth } from "database/firebase";
+import { useState, useEffect } from "react";
+import { useFirebase } from "@studyfind/firebase";
+
+import { Message } from "@studyfind/components";
 import { Flex, Spinner } from "@chakra-ui/react";
-import Message from "./Message";
 
 function VerifyEmail({ code }) {
   const [success, setSuccess] = useState(null);
+  const { auth } = useFirebase();
 
   useEffect(() => {
     if (code) {
@@ -15,7 +17,7 @@ function VerifyEmail({ code }) {
     } else {
       setSuccess(false);
     }
-  }, [code]);
+  }, [auth, code]);
 
   if (success === null) {
     return (

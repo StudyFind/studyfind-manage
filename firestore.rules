@@ -10,36 +10,36 @@ service cloud.firestore {
       return request.auth.uid == uid
     }
 
-    function isVerified() {
-      return request.auth.token.email_verified
-    }
+    // function isVerified() {
+    //   return request.auth.token.email_verified
+    // }
 
-    function isParticipant() {
-      return request.auth.token.participant
-    }
+    // function isParticipant() {
+    //   return request.auth && request.auth.token && request.auth.token.usertype == "participant"
+    // }
 
-    function isResearcher() {
-      return request.auth.token.researcher
-    }
+    // function isResearcher() {
+    //   return request.auth.token.usertype == "researcher"
+    // }
 
     // TYPE CHECKING
     function isBoolean(value) {
       return value is bool
     }
 
-    function isFloat(value) {
-      return value is float
-    }
+    // function isFloat(value) {
+    //   return value is float
+    // }
 
-    function isInteger(value) {
-      return value is int
-    }
+    // function isInteger(value) {
+    //   return value is int
+    // }
 
-    function isNumber(value) {
-      return value is number
-    }
+    // function isNumber(value) {
+    //   return value is number
+    // }
 
-    function isString() {
+    function isString(value) {
       return value is string
     }
 
@@ -62,7 +62,7 @@ service cloud.firestore {
     }
 
     function isEmail(value) {
-      return value is string && value.matches(".*@.*\..{2,3}")
+      return value is string // && value.matches(".*@.*\..{2,3}")
     }
 
     function isURL(value) {
@@ -71,7 +71,7 @@ service cloud.firestore {
 
     function isDate(value) {
       // meets YYYY-MM-DD format
-      return value is string && value.matches("/^(19|20)[0-9][0-9][-\\/. ](0[1-9]|1[012])[-\\/. ](0[1-9]|[12][0-9]|3[01])$/")
+      return value is string && value.matches("/^(19|20)[0-9][0-9]-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])$/")
     }
 
     function isTimestamp(value) {
@@ -80,11 +80,11 @@ service cloud.firestore {
       return value is int && 946684800000 <= value && value <= 32503680000000
     }
 
-    function isAmericanTimezone() {
-      return ["America/Adak", "America/Anchorage", "America/Boise", "America/Chicago", "America/Denver", "America/Detroit", "America/Indiana/Indianapolis", "America/Indiana/Knox", "America/Indiana/Marengo", "America/Indiana/Petersburg", "America/Indiana/Tell_City", "America/Indiana/Vevay", "America/Indiana/Vincennes", "America/Indiana/Winamac", "America/Juneau", "America/Kentucky/Louisville", "America/Kentucky/Monticello", "America/Los_Angeles", "America/Menominee", "America/Metlakatla", "America/New_York", "America/Nome", "America/North_Dakota/Beulah", "America/North_Dakota/Center", "America/North_Dakota/New_Salem", "America/Phoenix", "America/Sitka", "America/Yakutat", "Pacific/Honolulu"]
+    function isAmericanTimezone(value) {
+      return value in ["America/Adak", "America/Anchorage", "America/Boise", "America/Chicago", "America/Denver", "America/Detroit", "America/Indiana/Indianapolis", "America/Indiana/Knox", "America/Indiana/Marengo", "America/Indiana/Petersburg", "America/Indiana/Tell_City", "America/Indiana/Vevay", "America/Indiana/Vincennes", "America/Indiana/Winamac", "America/Juneau", "America/Kentucky/Louisville", "America/Kentucky/Monticello", "America/Los_Angeles", "America/Menominee", "America/Metlakatla", "America/New_York", "America/Nome", "America/North_Dakota/Beulah", "America/North_Dakota/Center", "America/North_Dakota/New_Salem", "America/Phoenix", "America/Sitka", "America/Yakutat", "Pacific/Honolulu"]
     }
 
-    function isWeeklyOffset() {
+    function isWeeklyOffset(value) {
       return value is int && 0 <= value < 604800000
     }
 
@@ -97,24 +97,24 @@ service cloud.firestore {
     }
 
     function isUnchanged(fieldPath) {
-      return request.resource.data.get(fieldPath) == resource.data.get(fieldPath)
+      return request.resource.data.get(fieldPath, "") == resource.data.get(fieldPath, "")
     }
 
-    function isChanged(fieldPath) {
-      return request.resource.data.get(fieldPath) != resource.data.get(fieldPath)
-    }
+    // function isChanged(fieldPath) {
+    //   return request.resource.data.get(fieldPath, "") != resource.data.get(fieldPath, "")
+    // }
 
     function isInFuture(value) {
       return isTimestamp(value) && (request.time / 1000000) <= value
     }
 
-    function isFirebaseUID(value) {
-      return value is string && value.matches("[a-zA-Z0-9]{28}")
-    }
+    // function isFirebaseUID(value) {
+    //   return value is string && value.matches("[a-zA-Z0-9]{28}")
+    // }
 
-    function isStudyNCTID(value) {
-      return value is string && value.matches("NCT[0-9]{8}")
-    }
+    // function isStudyNCTID(value) {
+    //   return value is string && value.matches("NCT[0-9]{8}")
+    // }
 
     function isSet(fieldName) {
       return resource.data[fieldName] == false && request.resource.data[fieldName] == true
@@ -122,6 +122,14 @@ service cloud.firestore {
 
     function isFakename(value) {
       return value is string && value.matches("[0-9A-Z]{10}")
+    }
+
+    function isEmptyString(value) {
+      return value == ""
+    }
+
+    function isMissing(fieldName) {
+      return !(fieldName in request.resource.data)
     }
 
     // CONSTANTS
@@ -135,6 +143,10 @@ service cloud.firestore {
 
     function isParticipantStatus(value) {
       return value in ["interested", "consented", "screened", "accepted", "rejected"]
+    }
+
+    function isSide(value) {
+      return value in ["researcher", "participant"]
     }
 
     // DOCUMENT QUERIES
@@ -215,12 +227,10 @@ service cloud.firestore {
         && isBetweenMinMaxCharacterCount(request.resource.data.name, 1, 100)
         && isBetweenMinMaxCharacterCount(request.resource.data.availability, 0, 500)
         && isAmericanTimezone(request.resource.data.timezone)
-        && isDate(request.resource.data.birthdate)
-        && isSex(request.resource.data.sex)
+        && isEmptyString(request.resource.data.birthdate)
+        && isEmptyString(request.resource.data.sex)
 
         && isMap(request.resource.data.location)
-        && isBetweenMinMaxValue(request.resource.data.location.latitude, -90, 90)
-        && isBetweenMinMaxValue(request.resource.data.location.longitude, -180, 180)
 
         && isList(request.resource.data.enrolled)
         && isList(request.resource.data.saved)
@@ -251,12 +261,12 @@ service cloud.firestore {
         && isUnchanged("name")
         && isBetweenMinMaxCharacterCount(request.resource.data.availability, 0, 500)
         && isAmericanTimezone(request.resource.data.timezone)
-        && isDate(request.resource.data.birthdate)
-        && isSex(request.resource.data.sex)
+        && (isEmptyString(request.resource.data.birthdate) || isString(request.resource.data.birthdate))
+        && (isEmptyString(request.resource.data.sex) || isSex(request.resource.data.sex))
 
         && isMap(request.resource.data.location)
-        && isBetweenMinMaxValue(request.resource.data.location.latitude, -90, 90)
-        && isBetweenMinMaxValue(request.resource.data.location.longitude, -180, 180)
+        && (isMissing("location.latitude") || isBetweenMinMaxValue(request.resource.data.location.latitude, -90, 90))
+        && (isMissing("location.longitude") || isBetweenMinMaxValue(request.resource.data.location.longitude, -180, 180))
 
         && isList(request.resource.data.enrolled)
         && isList(request.resource.data.saved)
@@ -290,7 +300,7 @@ service cloud.firestore {
       return isAuthenticatedAs(userID)
     }
 
-    function createNotification(userID) {
+    function createNotification() {
       return false // notification is created by cloud function on trigger
     }
 
@@ -302,21 +312,26 @@ service cloud.firestore {
         && isSet("read")
     }
 
-    function deleteNotification(userID) {
+    function deleteNotification() {
       return false // notifications can never be deleted
     }
 
-    function readStudy(studyID) {
-      return isResearcher()
-        ? isAuthenticatedAs(resource.data.researcher.id)
-        : isAuthenticated()
+    function readStudy() {
+      // return isResearcher()
+      //   ? isAuthenticatedAs(resource.data.researcher.id)
+      //   : (
+      //       isAuthenticated()
+      //       && isTrue(resource.data.published)
+      //       && isTrue(resource.data.activated)
+      //     )
+      return isAuthenticated()
     }
 
-    function createStudy(studyID) {
+    function createStudy() {
       return false // study is created by cloud function
     }
 
-    function updateStudy(studyID) {
+    function updateStudy() {
       return isAuthenticatedAs(resource.data.researcher.id)
         && isUnchanged("createdAt")
         && isUnchanged("updatedAt")
@@ -334,14 +349,15 @@ service cloud.firestore {
         && isList(request.resource.data.questions)
     }
 
-    function deleteStudy(studyID) {
+    function deleteStudy() {
       return isAuthenticatedAs(resource.data.researcher.id)
     }
 
-    function readStudySurvey(studyID) {
-      return isResearcher()
-        ? isAuthenticatedAs(getStudyResearcherID(studyID))
-        : isAuthenticated()
+    function readStudySurvey() {
+      // return isResearcher()
+      //   ? isAuthenticatedAs(getStudyResearcherID(studyID))
+      //   : isAuthenticated()
+      return isAuthenticated()
     }
 
     function createStudySurvey(studyID) {
@@ -354,7 +370,7 @@ service cloud.firestore {
         && isBoolean(request.resource.data.questions[0].required)
     }
 
-    function updateStudySurvey() {
+    function updateStudySurvey(studyID) {
       return isAuthenticatedAs(getStudyResearcherID(studyID))
         && isBetweenMinMaxCharacterCount(request.resource.data.title, 1, 100)
         && isList(request.resource.data.questions)
@@ -364,7 +380,7 @@ service cloud.firestore {
         && isBoolean(request.resource.data.questions[0].required)
     }
 
-    function deleteStudySurvey() {
+    function deleteStudySurvey(studyID) {
       return isAuthenticatedAs(getStudyResearcherID(studyID))
     }
 
@@ -435,12 +451,12 @@ service cloud.firestore {
         && isSet(request.resource.data.read)
     }
 
-    function deleteStudyParticipantMessage(studyID, participantID) {
+    function deleteStudyParticipantMessage() {
       return false
     }
 
     function readReminder() {
-      return isAuthenticatedAs(request.resource.data.researcherID) || isAuthenticatedAs(request.resource.data.participantID)
+      return isAuthenticatedAs(resource.data.researcherID) || isAuthenticatedAs(resource.data.participantID)
     }
 
     function createReminder() {
@@ -486,7 +502,7 @@ service cloud.firestore {
     }
 
     function readMeeting() {
-      return isAuthenticatedAs(request.resource.data.researcherID) || isAuthenticatedAs(request.resource.data.participantID)
+      return isAuthenticatedAs(resource.data.researcherID) || isAuthenticatedAs(resource.data.participantID)
     }
 
     function createMeeting() {
@@ -554,9 +570,9 @@ service cloud.firestore {
 
       match /notifications/{notificationID} {
       	allow read: if readNotification(researcherID)
-        allow create: if createNotification(researcherID)
+        allow create: if createNotification()
         allow update: if updateNotification(researcherID)
-        allow delete: if deleteNotification(researcherID)
+        allow delete: if deleteNotification()
       }
     }
 
@@ -568,17 +584,17 @@ service cloud.firestore {
 
       match /notifications/{notificationID} {
       	allow read: if readNotification(participantID)
-        allow create: if createNotification(participantID)
+        allow create: if createNotification()
         allow update: if updateNotification(participantID)
-        allow delete: if deleteNotification(participantID)
+        allow delete: if deleteNotification()
       }
     }
 
     match /studies/{studyID} {
-      allow read: if readStudy(studyID)
-      allow create: if createStudy(studyID)
-      allow update: if updateStudy(studyID)
-      allow delete: if deleteStudy(studyID)
+      allow read: if readStudy()
+      allow create: if createStudy()
+      allow update: if updateStudy()
+      allow delete: if deleteStudy()
 
       match /surveys/{surveyID} {
         allow read: if readStudySurvey(studyID);
@@ -604,7 +620,7 @@ service cloud.firestore {
           allow read: if readStudyParticipantMessage(studyID, participantID);
           allow create: if createStudyParticipantMessage(studyID, participantID);
           allow update: if updateStudyParticipantMessage(studyID, participantID);
-          allow delete: if deleteStudyParticipantMessage(studyID, participantID);
+          allow delete: if deleteStudyParticipantMessage();
         }
     	}
     }
