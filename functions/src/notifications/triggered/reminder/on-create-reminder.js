@@ -1,22 +1,26 @@
-const onTriggerReminder = require("./on-trigger-reminder");
-module.exports = async (snapshot) => onTriggerReminder(snapshot, "CREATE_REMINDER");
+const { firestore } = require("admin");
+const { getDocument } = require("utils");
+const { RESEARCHER_CREATED_REMINDER } = require("../../__utils__/notification-codes");
 
-/*
+const sendNotification = require("../../__utils__/send-notification");
 
-Participant
------------
-title: "New Reminder"
-body: `The researcher from study ${meta.reminder.studyID} has created a new weekly reminder for you titled ${meta.reminder.title}`
-icon: FaClock
-color: "green.500"
-background: "green.100"
+module.exports = async (snapshot) => {
+  const reminder = snapshot.data();
 
-Researcher
-----------
-title: "New Reminder"
-body: "You created a reminder for participant ${meta.studyParticipant.fakename} for study ${meta.reminder.studyID} titled ${meta.reminder.title}`
-icon: FaClock
-color: "green.500"
-background: "green.100"
+  const studyRef = firestore.collection("studies").doc(reminder.studyID);
+  const participantRef = firestore.collection("participants").doc(reminder.participantID);
 
-*/
+  const [study, participant] = await Promise.allSettled([
+    getDocument(studyRef),
+    getDocument(participantRef),
+  ]);
+
+  const notificationDetails = {
+    code: RESEARCHER_CREATED_REMINDER,
+    link: `https://studyfind.org/your-studies/${reminder.studyID}/reminders`,
+    title: "New Reminder",
+    description: `${study.researcher.name} has created the reminder "${reminder.title}" for you`,
+  };
+
+  sendNotification(participant, "participant", notificationDetails);
+};

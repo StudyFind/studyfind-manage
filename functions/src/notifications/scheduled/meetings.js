@@ -3,10 +3,11 @@ const moment = require("moment-timezone");
 const { firestore } = require("admin");
 const { getDocument, getCollection } = require("utils");
 
-const { MEETING } = require("../__utils__/notification-codes");
+const { MEETING_NOW } = require("../__utils__/notification-codes");
+const sendNotification = require("notifications/__utils__/send-notification");
 
 const getCurrentTimeRoundedTo30Minutes = () => {
-  const MILLIS_UTC_NOW = Date.now();
+  const MILLIS_UTC_NOW = moment().utc().valueOf();
   const MILLIS_IN_30_MINS = 1800000;
   return MILLIS_IN_30_MINS + Math.floor(MILLIS_UTC_NOW / MILLIS_IN_30_MINS) * MILLIS_IN_30_MINS;
 };
@@ -32,7 +33,8 @@ module.exports = async () => {
       const studyParticipantRef = firestore
         .collection("studies")
         .doc(studyID)
-        .participants(participantID);
+        .collection("participants")
+        .doc(participantID);
 
       const [researcher, participant, studyParticipant] = await Promise.all([
         getDocument(researcherRef),
@@ -48,23 +50,24 @@ module.exports = async () => {
       const participantTime = moment(roundedTime).tz(participant.timezone).format("h:mma");
       const researcherTime = moment(roundedTime).tz(researcher.timezone).format("h:mma");
 
-      const researcherNotification = {
-        title: `Meeting ${meeting.title} at ${researcherTime}`,
-        body: `You have a upcoming meeting with participant ${participantFakename} for study ${studyID} in 30 minutes`,
-        code: MEETING,
-        time: Date.now(),
-        meta: { participantID, meetingID: meeting.id },
+      const researcherNotificationDetails = {
+        code: MEETING_NOW,
+        title: `Meeting ${meeting.name} at ${researcherTime}`,
+        description: `You have a upcoming meeting with participant ${participantFakename} for study ${studyID} in 30 minutes`,
+        link: meeting.link,
       };
 
-      const participantNotification = {
-        title: `Meeting ${meeting.title} at ${participantTime}`,
-        body: `You have a upcoming meeting with researcher ${researcher.name} for study ${studyID} in 30 minutes`,
-        code: MEETING,
-        time: Date.now(),
-        meta: { participantID, meetingID: meeting.id },
+      const participantNotificationDetails = {
+        code: MEETING_NOW,
+        title: `Meeting ${meeting.name} at ${participantTime}`,
+        description: `You have a upcoming meeting with participant ${participantFakename} for study ${studyID} in 30 minutes`,
+        link: meeting.link,
       };
 
-      await Promise.all([sendResearcherNotification(), sendParticipantNotification()]);
+      await Promise.all([
+        sendNotification(researcher, "researcher", researcherNotificationDetails),
+        sendNotification(participant, "participant", participantNotificationDetails),
+      ]);
     })
   );
 };

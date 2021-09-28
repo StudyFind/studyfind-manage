@@ -1,14 +1,23 @@
-const onTriggerStudy = require("./on-trigger-study");
-module.exports = async (snapshot) => onTriggerStudy(snapshot, "CREATE_STUDY");
+const { firestore } = require("admin");
+const { getDocument } = require("utils");
+const { CREATE_STUDY } = require("../../__utils__/notification-codes");
 
-/*
+const sendNotification = require("../../__utils__/send-notification");
 
-Researcher
-----------
-title: "New Study"
-body: "You created a new study ${meta.study.id}`
-icon: FiFilePlus
-color: "green.500"
-background: "green.100"
+module.exports = async (snapshot) => {
+  const study = snapshot.data();
 
-*/
+  const studyID = snapshot.id;
+  const researcherID = study.researcher.id;
+
+  const researcher = await getDocument(firestore.collection("researchers").doc(researcherID));
+
+  const notificationDetails = {
+    code: CREATE_STUDY,
+    link: `https://researcher.studyfind.org/study/${studyID}/details`,
+    title: "Study Created",
+    description: `${study.title} has been created`,
+  };
+
+  sendNotification(researcher, "researcher", notificationDetails);
+};

@@ -1,22 +1,61 @@
-const onTriggerMeeting = require("./on-trigger-meeting");
-module.exports = async (snapshot) => onTriggerMeeting(snapshot, "UPDATE_MEETING");
+const { firestore } = require("admin");
+const { getDocument } = require("utils");
+const {
+  RESEARCHER_UPDATED_MEETING,
+  PARTICIPANT_CONFIRMED_MEETING,
+} = require("../../__utils__/notification-codes");
 
-/*
+const sendNotification = require("../../__utils__/send-notification");
 
-Participant
------------
-title: "Meeting Updated"
-body: `The researcher from study ${meta.meeting.studyID} has updated a meeting with you at ${moment(meta.meeting.time).format("LLL")}`
-icon: FaCalendarTimes
-color: "blue.500"
-background: "blue.100"
+module.exports = async (change) => {
+  const before = change.before.data();
+  const after = change.after.data();
 
-Researcher
-----------
-title: "Meeting Updated"
-body: `You deleted a meeting with participant ${meta.studyParticipant.fakename} for study ${meta.meeting.studyID} at ${moment(meta.meeting.time).format("LLL")}`
-icon: FaCalendarTimes
-color: "blue.500"
-background: "blue.100"
+  // PARTICIPANT
 
-*/
+  const hasNameChanged = before.name !== after.name;
+  const hasLinkChanged = before.link !== after.link;
+  const hasTimeChanged = before.time !== after.time;
+
+  if (hasNameChanged || hasLinkChanged || hasTimeChanged) {
+    const meeting = after;
+
+    const studyRef = firestore.collection("studies").doc(meeting.studyID);
+    const participantRef = firestore.collection("participants").doc(meeting.participantID);
+
+    const [study, participant] = await Promise.allSettled([
+      getDocument(studyRef),
+      getDocument(participantRef),
+    ]);
+
+    const notificationDetails = {
+      code: RESEARCHER_UPDATED_MEETING,
+      link: `https://studyfind.org/your-studies/${meeting.studyID}/meetings`,
+      title: "Meeting Updated",
+      description: `${study.researcher.name} has updated the meeting "${meeting.name}"`,
+    };
+
+    sendNotification(participant, "participant", notificationDetails);
+  }
+
+  // RESEARCHER
+
+  const hasParticipantConfirmed = !before.confirmedByParticipant && after.confirmedByParticipant;
+
+  if (hasParticipantConfirmed) {
+    const meeting = after;
+
+    const researcher = await getDocument(
+      firestore.collection("researchers").doc(meeting.researcherID)
+    );
+
+    const notificationDetails = {
+      code: PARTICIPANT_CONFIRMED_MEETING,
+      link: `https://researcher.studyfind.org/study/${meeting.studyID}/participants/${meeting.participantID}/meetings`,
+      title: "Meeting Updated",
+      description: `Participant ${meeting.participantID} has confirmed your meeting "${meeting.name}"`,
+    };
+
+    sendNotification(researcher, "researcher", notificationDetails);
+  }
+};
