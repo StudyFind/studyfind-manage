@@ -23,9 +23,7 @@ module.exports = async (snapshot) => {
     link: `https://studyfind.org/your-studies/${meeting.studyID}/meetings`,
     description: `${study.researcher.name} has created the meeting "${
       meeting.name
-    }" with you at ${moment(meeting.time).format("LLL")} (${moment
-      .tz(participant.timezone)
-      .zoneAbbr()})`,
+    }" with you at ${moment(meeting.time).tz(participant.timezone).format("LLL")})`,
   };
 
   sendNotification(participant, "participant", notificationDetails);
