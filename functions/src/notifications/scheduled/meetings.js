@@ -49,9 +49,9 @@ module.exports = async () => {
       if (!participant) throw Error(`Referenced participant ${participantID} does not exist`);
 
       const participantSubject = `Upcoming Meeting`;
-      const participantText = `You have a meeting with ${researcherUser.displayName} in 30 minutes: ${link}`;
+      const participantText = `You have a meeting with ${researcherUser.displayName} in 30 minutes`;
       const researcherSubject = `Upcoming Meeting`;
-      const researcherText = `Your meeting with ${participantFakename} from study ${studyID} is in 30 minutes: ${link}`;
+      const researcherText = `Your meeting with ${participantFakename} from study ${studyID} is in 30 minutes`;
 
       if (participant.notifications?.email) {
         const user = await auth.getUser(participantID);
@@ -59,7 +59,7 @@ module.exports = async () => {
         await sendEmail(
           participantEmail,
           participantSubject,
-          `${participantText}\n To unsubscribe from these notifications, please visit: https://studyfind.org/account/notifications/`
+          `${participantText}: ${link}\n To unsubscribe from these notifications, please visit: https://studyfind.org/account/notifications/`
         );
       }
 
@@ -69,7 +69,7 @@ module.exports = async () => {
           /\d\d\d\d\d\d\d\d\d\d/.test(participantPhone) &&
           (await sendPhone(
             `+1${participantPhone}`,
-            `${participantText}\n To unsubscribe visit: https://studyfind.org/account/notifications/`
+            `${participantText}: ${link}\n To unsubscribe visit: https://studyfind.org/account/notifications/`
           ));
       }
 
@@ -78,7 +78,7 @@ module.exports = async () => {
         await sendEmail(
           researcherEmail,
           researcherSubject,
-          `${researcherText}\n To unsubscribe from these notifications, please visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
+          `${researcherText}: ${link}\n To unsubscribe from these notifications, please visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
         );
       }
 
@@ -88,7 +88,7 @@ module.exports = async () => {
           /\d\d\d\d\d\d\d\d\d\d/.test(researcherPhone) &&
           (await sendPhone(
             `+1${researcherPhone}`,
-            `${researcherText}\n To unsubscribe visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
+            `${researcherText}: ${link}\n To unsubscribe visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
           ));
       }
 

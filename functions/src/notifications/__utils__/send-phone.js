@@ -6,5 +6,3 @@ module.exports = async (to, text) => {
     message: { channelId: "811868e46653456db8e54ff84034702d", type: "text", to, content: { text } },
   });
 };
-
-//append link, merge master, redo delete acc

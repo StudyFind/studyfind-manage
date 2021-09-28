@@ -66,7 +66,7 @@ module.exports = async () => {
               ));
           }
 
-          return addParticipantNotification(reminder.participantID, REMINDER_NOW, subject, text);
+          addParticipantNotification(reminder.participantID, REMINDER_NOW, subject, text);
         }
       })
     );
