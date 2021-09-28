@@ -9,19 +9,13 @@ module.exports = async (snapshot) => {
   const participantName = user.displayName;
   const participantEmail = user.email;
 
+  const subject = "Participant account created!";
+  const text = `Welcome ${participantName}! We're excited to have you here!`;
+
   await Promise.all([
     auth.setCustomUserClaims(participantID, { usertype: "participant" }),
-    sendEmail(
-      participantEmail,
-      "Create participant account title",
-      "Create participant account text"
-    ),
+    sendEmail(participantEmail, subject, text),
   ]);
 
-  return addParticipantNotification(
-    participantID,
-    CREATE_ACCOUNT,
-    "Participant account created!",
-    `Your account has been successfully created as ${participantName}!`
-  );
+  return addParticipantNotification(participantID, CREATE_ACCOUNT, subject, text);
 };

@@ -8,11 +8,10 @@ module.exports = async (snapshot) => {
   const studyID = snapshot.id;
   const study = snapshot.data();
   const researcherID = study.researcher.id;
+  const researcher = await getResearcher(researcherID);
 
   const subject = "Study Created!";
   const text = `${study.title} has been created`;
-
-  const researcher = await getResearcher(researcherID);
 
   if (researcher?.notifications?.email) {
     const user = await auth.getUser(researcherID);

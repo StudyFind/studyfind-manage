@@ -7,11 +7,10 @@ const sendPhone = require("../../__utils__/send-phone");
 module.exports = async (snapshot) => {
   const study = snapshot.data();
   const researcherID = study.researcher.id;
+  const researcher = await getResearcher(researcherID);
 
   const subject = "Study Deleted!";
   const text = `${study.title} has been deleted.`;
-
-  const researcher = await getResearcher(researcherID);
 
   if (researcher?.notifications?.email) {
     const user = await auth.getUser(researcherID);

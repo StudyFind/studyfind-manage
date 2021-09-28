@@ -9,19 +9,13 @@ module.exports = async (snapshot) => {
   const researcherName = user.displayName;
   const researcherEmail = user.email;
 
+  const subject = "Researcher Account Created!";
+  const text = `Hello ${researcherName}! Welcome to StudyFind!`;
+
   await Promise.all([
     auth.setCustomUserClaims(researcherID, { usertype: "researcher" }),
-    sendEmail(
-      researcherEmail,
-      "Create researcher account subject",
-      "Create researcher account text"
-    ),
+    sendEmail(researcherEmail, subject, text),
   ]);
 
-  return addResearcherNotification(
-    researcherID,
-    CREATE_ACCOUNT,
-    "Researcher account created!",
-    `Hello ${researcherName}! Welcome to StudyFind!`
-  );
+  return addResearcherNotification(researcherID, CREATE_ACCOUNT, subject, text);
 };
