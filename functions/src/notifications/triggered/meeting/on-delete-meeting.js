@@ -17,9 +17,9 @@ module.exports = async (snapshot) => {
 
   const notificationDetails = {
     code: RESEARCHER_DELETED_MEETING,
-    link: `https://studyfind.org/your-studies/${meeting.studyID}/meetings`,
     title: "Meeting Deleted",
-    description: `${study.researcher.name} has deleted the meeting "${meeting.name}"`,
+    description: `${study.researcher.name} has deleted the meeting titled "${meeting.name}". Click here to view!`,
+    link: `https://studyfind.org/your-studies/${meeting.studyID}/meetings`,
   };
 
   sendNotification(participant, "participant", notificationDetails);

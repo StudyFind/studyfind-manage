@@ -21,9 +21,11 @@ module.exports = async (snapshot) => {
     code: RESEARCHER_CREATED_MEETING,
     title: "New Meeting",
     link: `https://studyfind.org/your-studies/${meeting.studyID}/meetings`,
-    description: `${study.researcher.name} has created the meeting "${
+    description: `${study.researcher.name} has created the meeting titled "${
       meeting.name
-    }" with you at ${moment(meeting.time).tz(participant.timezone).format("LLL")})`,
+    }" with you at ${moment(meeting.time).tz(participant.timezone).format("LLL")} (${moment
+      .tz(participant.timezone)
+      .zoneAbbr()}). Click here to view and confirm!`,
   };
 
   sendNotification(participant, "participant", notificationDetails);

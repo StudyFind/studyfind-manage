@@ -52,14 +52,14 @@ module.exports = async () => {
 
       const researcherNotificationDetails = {
         code: MEETING_NOW,
-        title: `Meeting ${meeting.name} at ${researcherTime}`,
-        description: `You have a upcoming meeting with participant ${participantFakename} for study ${studyID} in 30 minutes`,
+        title: `Meeting "${meeting.name}" at ${researcherTime}`,
+        description: `You have a upcoming meeting titled with participant ${participantFakename} for study ${studyID} in 30 minutes`,
         link: meeting.link,
       };
 
       const participantNotificationDetails = {
         code: MEETING_NOW,
-        title: `Meeting ${meeting.name} at ${participantTime}`,
+        title: `Meeting "${meeting.name}" at ${participantTime}`,
         description: `You have a upcoming meeting with participant ${participantFakename} for study ${studyID} in 30 minutes`,
         link: meeting.link,
       };

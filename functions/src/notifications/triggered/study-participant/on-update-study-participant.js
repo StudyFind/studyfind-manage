@@ -15,9 +15,9 @@ module.exports = async (change, context) => {
 
     const notificationDetails = {
       code: RESEARCHER_CHANGED_PARTICIPANT_STATUS,
-      link: `https://studyfind.org/your-studies`,
-      title: "New Participant Enrolled",
+      title: "Study Status Changed",
       description: `Your status for study ${context.params.studyID} has changed from ${before.status} to ${after.status}`,
+      link: `https://studyfind.org/your-studies`,
     };
 
     sendNotification(participant, "participant", notificationDetails);

@@ -45,7 +45,7 @@ module.exports = async () => {
           sendNotification(participant, "participant", {
             code: REMINDER_NOW,
             title: reminder.title,
-            description: `This is a reminder set by the researcher to notify you`,
+            description: `This is a reminder set by the researcher to notify you. Click here to view the reminder details`,
             link: `https://studyfind.org/your-studies/${reminder.studyID}/reminders`,
           })
         );

@@ -9,18 +9,16 @@ module.exports = async (snapshot) => {
 
   const user = await auth.getUser(researcherID);
 
-  const researcherName = user.displayName;
-  const researcherEmail = user.email;
-
   const notificationDetails = {
     code: CREATE_ACCOUNT,
     title: "Welcome to StudyFind!",
-    description: `Your account has been successfully created as ${researcherName}!`,
+    description: `Your account has been successfully created as "${user.displayName}". Please verify your email to start creating studies!`,
+    link: "https://researcher.studyfind.org",
   };
 
   const welcomeEmailSubject = "Welcome to StudyFind!";
   const welcomeEmailBody = `
-    Hello ${researcherName},
+    Hello ${user.displayName},
 
     We're excited to have you on the StudyFind team!
     Now, you will be able to coordinate and communicate with participants easier and faster than ever!
@@ -29,6 +27,6 @@ module.exports = async (snapshot) => {
   Promise.allSettled([
     auth.setCustomUserClaims(researcherID, { usertype: "researcher" }),
     sendNotificationLocal(researcherID, "researcher", notificationDetails),
-    sendEmail(researcherEmail, welcomeEmailSubject, welcomeEmailBody),
+    sendEmail(user.email, welcomeEmailSubject, welcomeEmailBody),
   ]);
 };

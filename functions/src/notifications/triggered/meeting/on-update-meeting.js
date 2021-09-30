@@ -30,9 +30,9 @@ module.exports = async (change) => {
 
     const notificationDetails = {
       code: RESEARCHER_UPDATED_MEETING,
-      link: `https://studyfind.org/your-studies/${meeting.studyID}/meetings`,
       title: "Meeting Updated",
-      description: `${study.researcher.name} has updated the meeting "${meeting.name}"`,
+      description: `${study.researcher.name} has updated the meeting titled "${meeting.name}". Click here to view!`,
+      link: `https://studyfind.org/your-studies/${meeting.studyID}/meetings`,
     };
 
     sendNotification(participant, "participant", notificationDetails);
@@ -51,9 +51,9 @@ module.exports = async (change) => {
 
     const notificationDetails = {
       code: PARTICIPANT_CONFIRMED_MEETING,
-      link: `https://researcher.studyfind.org/study/${meeting.studyID}/participants/${meeting.participantID}/meetings`,
       title: "Meeting Updated",
-      description: `Participant ${meeting.participantID} has confirmed your meeting "${meeting.name}"`,
+      description: `Participant ${meeting.participantID} has confirmed your meeting titled "${meeting.name}"`,
+      link: `https://researcher.studyfind.org/study/${meeting.studyID}/participants/${meeting.participantID}/meetings`,
     };
 
     sendNotification(researcher, "researcher", notificationDetails);
