@@ -30,9 +30,9 @@ module.exports = async (change) => {
 
     const notificationDetails = {
       code: RESEARCHER_UPDATED_MEETING,
-      title: "Meeting Updated",
-      description: `${study.researcher.name} has updated the meeting titled "${meeting.name}". Click here to view!`,
       link: `https://studyfind.org/your-studies/${meeting.studyID}/meetings`,
+      title: "Meeting Updated",
+      description: `${study.researcher.name} has updated the meeting titled "${meeting.name}"`,
     };
 
     sendNotification(participant, "participant", notificationDetails);

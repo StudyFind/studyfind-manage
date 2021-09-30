@@ -15,7 +15,7 @@ module.exports = async (snapshot) => {
   const notificationDetails = {
     code: CREATE_STUDY,
     title: "Study Created",
-    description: `Your study titled "${study.title}" has been created. Click here to view your study!`,
+    description: `Your study titled "${study.title}" has been created`,
     link: `https://researcher.studyfind.org/study/${studyID}/details`,
   };
 

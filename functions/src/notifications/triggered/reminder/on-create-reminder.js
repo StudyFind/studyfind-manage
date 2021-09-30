@@ -19,7 +19,7 @@ module.exports = async (snapshot) => {
     code: RESEARCHER_CREATED_REMINDER,
     link: `https://studyfind.org/your-studies/${reminder.studyID}/reminders`,
     title: "New Reminder",
-    description: `${study.researcher.name} has created the reminder titled "${reminder.title}" for you. Click here to view and confirm!`,
+    description: `${study.researcher.name} has created the reminder titled "${reminder.title}" for you`,
   };
 
   sendNotification(participant, "participant", notificationDetails);

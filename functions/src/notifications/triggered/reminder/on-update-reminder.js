@@ -34,7 +34,7 @@ module.exports = async (change) => {
     const notificationDetails = {
       code: RESEARCHER_UPDATED_REMINDER,
       title: "Reminder Updated",
-      description: `${study.researcher.name} has updated the reminder titled "${reminder.title}". Click here to view!`,
+      description: `${study.researcher.name} has updated the reminder titled "${reminder.title}"`,
       link: `https://studyfind.org/your-studies/${reminder.studyID}/reminders`,
     };
 

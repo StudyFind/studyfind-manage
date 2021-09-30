@@ -19,13 +19,13 @@ module.exports = async (snapshot) => {
 
   const notificationDetails = {
     code: RESEARCHER_CREATED_MEETING,
-    title: "New Meeting",
     link: `https://studyfind.org/your-studies/${meeting.studyID}/meetings`,
+    title: "New Meeting",
     description: `${study.researcher.name} has created the meeting titled "${
       meeting.name
     }" with you at ${moment(meeting.time).tz(participant.timezone).format("LLL")} (${moment
       .tz(participant.timezone)
-      .zoneAbbr()}). Click here to view and confirm!`,
+      .zoneAbbr()})`,
   };
 
   sendNotification(participant, "participant", notificationDetails);

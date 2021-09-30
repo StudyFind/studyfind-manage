@@ -13,7 +13,7 @@ module.exports = async (snapshot, context) => {
   const notificationDetails = {
     code: PARTICIPANT_ENROLLED,
     title: "New Participant Enrolled",
-    description: `A new participant ${participantID} has enrolled in your study. Click here to view their screening responses!`,
+    description: `A new participant ${participantID} has enrolled in your study`,
     link: `https://researcher.studyfind.org/study/${context.params.studyID}/participants/${participantID}/questions`,
   };
 
