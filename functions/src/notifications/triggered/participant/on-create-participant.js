@@ -20,7 +20,7 @@ module.exports = async (snapshot) => {
     Hello ${user.displayName},
 
     We're excited to have you on the StudyFind team!
-    Now, you will be able to find and enroll in studies easier and faster than ever!
+    Now you'll be able to find and enroll in research studies easier and faster than ever!
   `;
 
   Promise.allSettled([
