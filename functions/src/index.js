@@ -27,6 +27,8 @@ const onDeleteMeetingNotification = require("./notifications/triggered/meeting/o
 const onCreateStudyParticipantNotification = require("./notifications/triggered/study-participant/on-create-study-participant");
 const onUpdateStudyParticipantNotification = require("./notifications/triggered/study-participant/on-create-study-participant");
 
+const onCreateMessageNotification = require("notifications/triggered/message/on-create-message");
+
 // MAINTENANCE
 const onDeleteStudyMaintenance = require("./maintenance/on-delete-study");
 
@@ -45,6 +47,9 @@ const remindersRef = functions.firestore.document("reminders/{reminderID}");
 const meetingsRef = functions.firestore.document("meetings/{meetingID}");
 const studyParticipantsRef = functions.firestore.document(
   "studies/{studyID}/participants/{participantID}"
+);
+const messagesRef = functions.firestore.document(
+  "studies/{studyID}/participants/{participantID}/messages/{messageID}"
 );
 
 exports.onCreateResearcher = researchersRef.onCreate((snapshot, context) => {
@@ -80,6 +85,8 @@ exports.onDeleteReminder = remindersRef.onDelete(onDeleteReminderNotification);
 exports.onCreateMeeting = meetingsRef.onCreate(onCreateMeetingNotification);
 exports.onUpdateMeeting = meetingsRef.onUpdate(onUpdateMeetingNotification);
 exports.onDeleteMeeting = meetingsRef.onDelete(onDeleteMeetingNotification);
+
+exports.onCreateMessage = messagesRef.onCreate(onCreateMessageNotification);
 
 exports.onCreateStudyParticipant = studyParticipantsRef.onCreate(
   onCreateStudyParticipantNotification
