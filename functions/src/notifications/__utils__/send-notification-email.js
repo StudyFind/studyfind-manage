@@ -5,11 +5,11 @@ module.exports = async (email, notificationDetails, notificationSettingsLink) =>
     to: email,
     message: {
       subject: notificationDetails.title,
-      text: `
+      html: `
         ${notificationDetails.description}
 
-        Click here to view updates: ${notificationDetails.link}
-        Click here to update notification settings: ${notificationSettingsLink}
+        Click <a href="${notificationDetails.link}">here</a> to view updates
+        Click <a href="${notificationSettingsLink}">here</a> to update notification settings
       `,
     },
   });
