@@ -24,9 +24,7 @@ module.exports = async (snapshot) => {
     Now, you will be able to coordinate and communicate with participants easier and faster than ever!
   `;
 
-  Promise.allSettled([
-    auth.setCustomUserClaims(researcherID, { usertype: "researcher" }),
-    sendNotificationLocal(researcherID, "researcher", notificationDetails),
-    sendEmail(user.email, welcomeEmailSubject, welcomeEmailBody),
-  ]);
+  auth.setCustomUserClaims(researcherID, { usertype: "researcher" });
+  sendNotificationLocal(researcherID, "researcher", notificationDetails);
+  sendEmail(user.email, welcomeEmailSubject, welcomeEmailBody);
 };

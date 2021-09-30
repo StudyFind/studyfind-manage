@@ -23,9 +23,7 @@ module.exports = async (snapshot) => {
     Now you'll be able to find and enroll in research studies easier and faster than ever!
   `;
 
-  Promise.allSettled([
-    auth.setCustomUserClaims(participantID, { usertype: "participant" }),
-    sendNotificationLocal(participantID, "participant", notificationDetails),
-    sendEmail(user.email, welcomeEmailSubject, welcomeEmailBody),
-  ]);
+  auth.setCustomUserClaims(participantID, { usertype: "participant" });
+  sendNotificationLocal(participantID, "participant", notificationDetails);
+  sendEmail(user.email, welcomeEmailSubject, welcomeEmailBody);
 };

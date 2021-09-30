@@ -36,6 +36,8 @@ const onDeleteResearcherMaintenance = require("./maintenance/on-delete-researche
 const onUpdateParticipantMaintenance = require("./maintenance/on-update-participant");
 const onDeleteParticipantMaintenance = require("./maintenance/on-delete-participant");
 
+const setUsertypeCustomClaim = require("./claims/set-usertype-custom-claim");
+
 const researchersRef = functions.firestore.document("researchers/{researcherID}");
 const participantsRef = functions.firestore.document("participants/{participantID}");
 const studiesRef = functions.firestore.document("studies/{studyID}");
@@ -45,14 +47,20 @@ const studyParticipantsRef = functions.firestore.document(
   "studies/{studyID}/participants/{participantID}"
 );
 
-exports.onCreateResearcher = researchersRef.onCreate(onCreateResearcherNotification);
+exports.onCreateResearcher = researchersRef.onCreate((snapshot, context) => {
+  onCreateResearcherNotification(snapshot, context);
+  setUsertypeCustomClaim(snapshot.id, "RESEARCHER");
+});
 exports.onUpdateResearcher = researchersRef.onUpdate(onUpdateResearcherMaintenance);
 exports.onDeleteResearcher = researchersRef.onDelete((snapshot, context) => {
   onDeleteResearcherNotification(snapshot, context);
   onDeleteResearcherMaintenance(snapshot, context);
 });
 
-exports.onCreateParticipant = participantsRef.onCreate(onCreateParticipantNotification);
+exports.onCreateParticipant = participantsRef.onCreate((snapshot, context) => {
+  onCreateParticipantNotification(snapshot, context);
+  setUsertypeCustomClaim(snapshot.id, "PARTICIPANT");
+});
 exports.onUpdateResearcher = researchersRef.onUpdate(onUpdateParticipantMaintenance);
 exports.onDeleteParticipant = participantsRef.onDelete((snapshot, context) => {
   onDeleteParticipantNotification(snapshot, context);
