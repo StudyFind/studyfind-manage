@@ -1,0 +1,24 @@
+[debug] [2021-10-02T02:52:59.036Z] ----------------------------------------------------------------------
+[debug] [2021-10-02T02:52:59.039Z] Command:       /Users/yohanjhaveri/.nvm/versions/node/v15.12.0/bin/node /usr/local/bin/firebase deploy --only hosting
+[debug] [2021-10-02T02:52:59.039Z] CLI Version:   9.2.1
+[debug] [2021-10-02T02:52:59.039Z] Platform:      darwin
+[debug] [2021-10-02T02:52:59.039Z] Node Version:  v15.12.0
+[debug] [2021-10-02T02:52:59.042Z] Time:          Fri Oct 01 2021 22:52:59 GMT-0400 (Eastern Daylight Time)
+[debug] [2021-10-02T02:52:59.042Z] ----------------------------------------------------------------------
+[debug] [2021-10-02T02:52:59.042Z] 
+[debug] [2021-10-02T02:52:59.052Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2021-10-02T02:52:59.053Z] > authorizing via signed-in user
+[debug] [2021-10-02T02:52:59.053Z] [iam] checking project studyfind-researcher for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2021-10-02T02:52:59.055Z] > refreshing access token with scopes: ["email","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","openid"]
+[debug] [2021-10-02T02:52:59.055Z] >>> HTTP REQUEST POST https://www.googleapis.com/oauth2/v3/token  
+ <request body omitted>
+[debug] [2021-10-02T02:52:59.382Z] <<< HTTP RESPONSE 200 {"expires":"Mon, 01 Jan 1990 00:00:00 GMT","cache-control":"no-cache, no-store, max-age=0, must-revalidate","pragma":"no-cache","date":"Sat, 02 Oct 2021 02:52:59 GMT","content-type":"application/json; charset=utf-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","server":"scaffolding on HTTPServer2","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-Q050=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[debug] [2021-10-02T02:52:59.398Z] >>> HTTP REQUEST POST https://cloudresourcemanager.googleapis.com/v1/projects/studyfind-researcher:testIamPermissions  
+ {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2021-10-02T02:52:59.735Z] <<< HTTP RESPONSE 200 {"content-type":"application/json; charset=UTF-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","date":"Sat, 02 Oct 2021 02:52:59 GMT","server":"ESF","cache-control":"private","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","server-timing":"gfet4t7; dur=90","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-Q050=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[debug] [2021-10-02T02:52:59.736Z] > refreshing access token with scopes: []
+[debug] [2021-10-02T02:52:59.736Z] >>> HTTP REQUEST POST https://www.googleapis.com/oauth2/v3/token  
+ <request body omitted>
+[debug] [2021-10-02T02:53:00.101Z] <<< HTTP RESPONSE 200 {"cache-control":"no-cache, no-store, max-age=0, must-revalidate","expires":"Mon, 01 Jan 1990 00:00:00 GMT","pragma":"no-cache","date":"Sat, 02 Oct 2021 02:52:59 GMT","content-type":"application/json; charset=utf-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","server":"scaffolding on HTTPServer2","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-Q050=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[debug] [2021-10-02T02:53:00.119Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/studyfind-researcher [none]
+[debug] [2021-10-02T02:53:00.635Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/studyfind-researcher 200
