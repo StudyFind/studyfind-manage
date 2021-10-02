@@ -1,17 +1,21 @@
-const { auth, firestore } = require("admin");
+const { auth } = require("admin");
 const { CREATE_ACCOUNT } = require("../../__utils__/notification-codes");
+const { addParticipantNotification } = require("../../__utils__/database");
+const sendEmail = require("../../__utils__/send-email");
 
 module.exports = async (snapshot) => {
   const participantID = snapshot.id;
-  const participantName = snapshot.get("name");
+  const user = await auth.getUser(participantID);
+  const participantName = user.displayName;
+  const participantEmail = user.email;
 
-  await auth.setCustomUserClaims(participantID, { usertype: "participant" });
+  const subject = "Participant account created!";
+  const text = `Welcome ${participantName}! We're excited to have you here!`;
 
-  // TODO: Send welcome email
+  await Promise.all([
+    auth.setCustomUserClaims(participantID, { usertype: "participant" }),
+    sendEmail(participantEmail, subject, text),
+  ]);
 
-  return firestore.collection("participants").doc(participantID).collection("notifications").add({
-    time: Date.now(),
-    code: CREATE_ACCOUNT,
-    meta: { participantName },
-  });
+  return addParticipantNotification(participantID, CREATE_ACCOUNT, subject, text);
 };

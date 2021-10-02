@@ -1,17 +1,18 @@
 const { auth } = require("admin");
-const { RESEARCHER_CREATED_REMINDER } = require("../../__utils__/notification-codes");
+const { RESEARCHER_CHANGED_PARTICIPANT_STATUS } = require("../../__utils__/notification-codes");
 const { getParticipant, addParticipantNotification } = require("../../__utils__/database");
 const sendEmail = require("../../__utils__/send-email");
 const sendPhone = require("../../__utils__/send-phone");
 
-module.exports = async (snapshot) => {
-  const reminder = snapshot.data();
-  const { participantID, researcherID, studyID, title } = reminder;
+module.exports = async (change, context) => {
+  const before = change.before.get("status");
+  const after = change.after.get("status");
+  if (before === after) return undefined;
+  const { studyID, participantID } = context.params;
   const participant = await getParticipant(participantID);
-  const researcherUser = await auth.getUser(researcherID);
 
-  const subject = "Researcher Created Reminder!";
-  const text = `${researcherUser.displayName} has set up a weekly reminder called ${title} for you.`;
+  const subject = "Researcher Changed Participant Status!";
+  const text = `Your status in study ${studyID} is now ${after}`;
 
   if (participant?.notifications?.email) {
     const user = await auth.getUser(participantID);
@@ -19,7 +20,7 @@ module.exports = async (snapshot) => {
     await sendEmail(
       participantEmail,
       subject,
-      `${text}: ${`https://studyfind.org/mystudies/${studyID}/reminders/`}\n To unsubscribe from these notifications, please visit: https://studyfind.org/account/notifications/`
+      `${text}: ${`https://studyfind.org/mystudies/${studyID}/`}\n To unsubscribe from these notifications, please visit: https://studyfind.org/account/notifications/`
     );
   }
 
@@ -29,15 +30,15 @@ module.exports = async (snapshot) => {
       /\d\d\d\d\d\d\d\d\d\d/.test(participantPhone) &&
       (await sendPhone(
         `+1${participantPhone}`,
-        `${text}: ${`https://studyfind.org/mystudies/${studyID}/reminders/`}\n To unsubscribe visit: https://studyfind.org/account/notifications/`
+        `${text}: ${`https://studyfind.org/mystudies/${studyID}/`}\n To unsubscribe visit: https://studyfind.org/account/notifications/`
       ));
   }
 
   return addParticipantNotification(
     participantID,
-    RESEARCHER_CREATED_REMINDER,
+    RESEARCHER_CHANGED_PARTICIPANT_STATUS,
     subject,
     text,
-    `/mystudies/${studyID}/reminders/`
+    `/mystudies/${studyID}/`
   );
 };

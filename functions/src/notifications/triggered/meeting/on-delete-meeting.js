@@ -1,23 +1,40 @@
-const onTriggerMeeting = require("./on-trigger-meeting");
-module.exports = async (snapshot) => onTriggerMeeting(snapshot, "DELETE_MEETING");
+const { auth } = require("admin");
+const moment = require("moment");
+const { RESEARCHER_DELETED_MEETING } = require("../../__utils__/notification-codes");
+const { getParticipant, addParticipantNotification } = require("../../__utils__/database");
+const sendEmail = require("../../__utils__/send-email");
+const sendPhone = require("../../__utils__/send-phone");
 
-/*
+module.exports = async (snapshot) => {
+  const meeting = snapshot.data();
+  const { participantID, researcherID, time } = meeting;
+  const participant = await getParticipant(participantID);
+  const researcherUser = await auth.getUser(researcherID);
 
-Participant
------------
-title: "Meeting Deleted"
-body: `The researcher from study ${meta.meeting.studyID} has deleted a meeting with you at ${moment(meta.meeting.time).format("LLL")}`
-icon: FaCalendarTimes
-color: "red.500"
-background: "red.100"
-link: "https://researcher.studyfind.org/study/${studyID}/participant/${participantID}"
+  const subject = "Researcher Canceled Meeting!";
+  const text = `Your meeting at ${moment(time)
+    .tz(participant.timezone.region)
+    .format("LLL")} with ${researcherUser.displayName} has been canceled.`;
 
-Researcher
-----------
-title: "Meeting Deleted"
-body: `You deleted a meeting with participant ${meta.studyParticipant.fakename} for study ${meta.meeting.studyID} at ${moment(meta.meeting.time).format("LLL")}`
-icon: FaCalendarTimes
-color: "red.500"
-background: "red.100"
+  if (participant?.notifications?.email) {
+    const user = await auth.getUser(participantID);
+    const participantEmail = user.email;
+    await sendEmail(
+      participantEmail,
+      subject,
+      `${text}\n To unsubscribe from these notifications, please visit: https://studyfind.org/account/notifications/`
+    );
+  }
 
-*/
+  if (participant?.notifications?.phone) {
+    const participantPhone = participant.phone;
+    participantPhone &&
+      /\d\d\d\d\d\d\d\d\d\d/.test(participantPhone) &&
+      (await sendPhone(
+        `+1${participantPhone}`,
+        `${text}\n To unsubscribe visit: https://studyfind.org/account/notifications/`
+      ));
+  }
+
+  return addParticipantNotification(participantID, RESEARCHER_DELETED_MEETING, subject, text);
+};

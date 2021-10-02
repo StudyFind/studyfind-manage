@@ -1,17 +1,21 @@
-const { auth, firestore } = require("admin");
+const { auth } = require("admin");
 const { CREATE_ACCOUNT } = require("../../__utils__/notification-codes");
+const { addResearcherNotification } = require("../../__utils__/database");
+const sendEmail = require("../../__utils__/send-email");
 
 module.exports = async (snapshot) => {
   const researcherID = snapshot.id;
-  const researcherName = snapshot.get("name");
+  const user = await auth.getUser(researcherID);
+  const researcherName = user.displayName;
+  const researcherEmail = user.email;
 
-  await auth.setCustomUserClaims(researcherID, { usertype: "researcher" });
+  const subject = "Researcher Account Created!";
+  const text = `Hello ${researcherName}! Welcome to StudyFind!`;
 
-  // TODO: Send welcome email
+  await Promise.all([
+    auth.setCustomUserClaims(researcherID, { usertype: "researcher" }),
+    sendEmail(researcherEmail, subject, text),
+  ]);
 
-  return firestore.collection("researchers").doc(researcherID).collection("notifications").add({
-    time: Date.now(),
-    code: CREATE_ACCOUNT,
-    meta: { researcherName },
-  });
+  return addResearcherNotification(researcherID, CREATE_ACCOUNT, subject, text);
 };

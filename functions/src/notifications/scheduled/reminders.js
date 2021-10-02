@@ -1,9 +1,12 @@
+const { auth } = require("admin");
 const moment = require("moment-timezone");
 
 const { firestore } = require("admin");
 const { getDocument, getCollection } = require("utils");
-
-const { REMINDER } = require("../__utils__/notification-codes");
+const { REMINDER_NOW } = require("../__utils__/notification-codes");
+const { addParticipantNotification } = require("../__utils__/database");
+const sendEmail = require("../__utils__/send-email");
+const sendPhone = require("../__utils__/send-phone");
 
 const getWeeklyOffset = (time) => {
   const MILLIS_IN_WEEK = 604800000;
@@ -39,14 +42,32 @@ module.exports = async () => {
         const participantRef = firestore.collection("participants").doc(reminder.participantID);
         const participant = await getDocument(participantRef);
 
-        return (
-          participant.timezone === timezoneName &&
-          participantRef.collection("notifications").add({
-            time: Date.now(),
-            code: REMINDER,
-            meta: { title: reminder.title },
-          })
-        );
+        if (participant.timezone === timezoneName) {
+          const subject = `${reminder.title}`;
+          const text = `This is a reminder for study ${reminder.studyID}.`;
+
+          if (participant.notifications?.email) {
+            const user = await auth.getUser(reminder.participantID);
+            const participantEmail = user.email;
+            await sendEmail(
+              participantEmail,
+              subject,
+              `${text}\n To unsubscribe from these notifications, please visit: https://studyfind.org/account/notifications/`
+            );
+          }
+
+          if (participant.notifications?.phone) {
+            const participantPhone = participant.phone;
+            participantPhone &&
+              /\d\d\d\d\d\d\d\d\d\d/.test(participantPhone) &&
+              (await sendPhone(
+                `+1${participantPhone}`,
+                `${subject}\n To unsubscribe visit: https://studyfind.org/account/notifications/`
+              ));
+          }
+
+          addParticipantNotification(reminder.participantID, REMINDER_NOW, subject, text);
+        }
       })
     );
   });
