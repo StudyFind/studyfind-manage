@@ -19,5 +19,5 @@ module.exports = async (snapshot) => {
     link: `https://researcher.studyfind.org/study/${studyID}/details`,
   };
 
-  sendNotification(researcher, "researcher", notificationDetails);
+  return sendNotification(researcher, "researcher", notificationDetails);
 };

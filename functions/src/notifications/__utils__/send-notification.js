@@ -33,5 +33,5 @@ module.exports = async (userData, userType, notificationDetails) => {
     }
   }
 
-  Promise.allSettled(promises);
+  return Promise.allSettled(promises);
 };

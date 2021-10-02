@@ -17,5 +17,5 @@ module.exports = async (snapshot, context) => {
     link: `https://researcher.studyfind.org/study/${context.params.studyID}/participants/${participantID}/questions`,
   };
 
-  sendNotification(researcher, "researcher", notificationDetails);
+  return sendNotification(researcher, "researcher", notificationDetails);
 };

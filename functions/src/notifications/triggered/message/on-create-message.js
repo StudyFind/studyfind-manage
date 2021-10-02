@@ -24,7 +24,7 @@ module.exports = async (snapshot, context) => {
       description: `${study.researcher.name} has sent you a message`,
     };
 
-    sendNotification(participant, "participant", notificationDetails);
+    return sendNotification(participant, "participant", notificationDetails);
   } else {
     // researcher sent message
 
@@ -37,6 +37,6 @@ module.exports = async (snapshot, context) => {
       description: `Participant ${participantID} has sent you a message`,
     };
 
-    sendNotification(researcher, "researcher", notificationDetails);
+    return sendNotification(researcher, "researcher", notificationDetails);
   }
 };

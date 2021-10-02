@@ -23,5 +23,5 @@ module.exports = async (snapshot) => {
     If this is truly is goodbye, we want to thank you once again for being part of the StudyFind community.
   `;
 
-  sendEmail(participantEmail, goodbyeEmailSubject, goodbyeEmailBody);
+  return sendEmail(participantEmail, goodbyeEmailSubject, goodbyeEmailBody);
 };

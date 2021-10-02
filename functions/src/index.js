@@ -54,29 +54,39 @@ const messagesRef = functions.firestore.document(
 );
 
 exports.onCreateResearcher = researchersRef.onCreate((snapshot, context) => {
-  onCreateResearcherNotification(snapshot, context);
-  setUsertypeCustomClaim(snapshot.id, "RESEARCHER");
+  return Promise.allSettled([
+    onCreateResearcherNotification(snapshot, context),
+    setUsertypeCustomClaim(snapshot.id, "RESEARCHER"),
+  ]);
 });
 exports.onUpdateResearcher = researchersRef.onUpdate(onUpdateResearcherMaintenance);
 exports.onDeleteResearcher = researchersRef.onDelete((snapshot, context) => {
-  onDeleteResearcherNotification(snapshot, context);
-  onDeleteResearcherMaintenance(snapshot, context);
+  return Promise.allSettled([
+    onDeleteResearcherNotification(snapshot, context),
+    onDeleteResearcherMaintenance(snapshot, context),
+  ]);
 });
 
 exports.onCreateParticipant = participantsRef.onCreate((snapshot, context) => {
-  onCreateParticipantNotification(snapshot, context);
-  setUsertypeCustomClaim(snapshot.id, "PARTICIPANT");
+  return Promise.allSettled([
+    onCreateParticipantNotification(snapshot, context),
+    setUsertypeCustomClaim(snapshot.id, "PARTICIPANT"),
+  ]);
 });
 exports.onUpdateResearcher = researchersRef.onUpdate(onUpdateParticipantMaintenance);
 exports.onDeleteParticipant = participantsRef.onDelete((snapshot, context) => {
-  onDeleteParticipantNotification(snapshot, context);
-  onDeleteParticipantMaintenance(snapshot, context);
+  return Promise.allSettled([
+    onDeleteParticipantNotification(snapshot, context),
+    onDeleteParticipantMaintenance(snapshot, context),
+  ]);
 });
 
 exports.onCreateStudy = studiesRef.onCreate(onCreateStudyNotification);
 exports.onDeleteStudy = studiesRef.onDelete((snapshot, context) => {
-  onDeleteStudyNotification(snapshot, context);
-  onDeleteStudyMaintenance(snapshot, context);
+  return Promise.allSettled([
+    onDeleteStudyNotification(snapshot, context),
+    onDeleteStudyMaintenance(snapshot, context),
+  ]);
 });
 
 exports.onCreateReminder = remindersRef.onCreate(onCreateReminderNotification);
