@@ -6,17 +6,6 @@ const {
   PARTICIPANT_CONFIRMED_REMINDER,
 } = require("../../__utils__/notification-codes");
 
-const {
-  getParticipant,
-  addParticipantNotification,
-  getResearcher,
-  addResearcherNotification,
-  getStudyParticipant,
-} = require("../../__utils__/database");
-const { getDocument } = require("utils");
-const sendEmail = require("../../__utils__/send-email");
-const sendPhone = require("../../__utils__/send-phone");
-
 const sendNotification = require("../../__utils__/send-notification");
 
 module.exports = async (change) => {
