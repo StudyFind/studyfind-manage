@@ -1,8 +1,11 @@
-const { auth, firestore } = require("admin");
+const { firestore } = require("admin");
+const { getDocument } = require("utils");
+
 const {
   RESEARCHER_UPDATED_REMINDER,
   PARTICIPANT_CONFIRMED_REMINDER,
 } = require("../../__utils__/notification-codes");
+
 const {
   getParticipant,
   addParticipantNotification,
@@ -14,90 +17,58 @@ const { getDocument } = require("utils");
 const sendEmail = require("../../__utils__/send-email");
 const sendPhone = require("../../__utils__/send-phone");
 
+const sendNotification = require("../../__utils__/send-notification");
+
 module.exports = async (change) => {
   const before = change.before.data();
   const after = change.after.data();
 
-  const arrayEqual = (arr1, arr2) => {
+  const isArrayEqual = (arr1, arr2) => {
     return arr1.length === arr2.length && arr1.every((val, index) => val === arr2[index]);
   };
 
-  if (
-    before.title !== after.title ||
-    before.startDate !== after.startDate ||
-    before.endDate !== after.endDate ||
-    !arrayEqual(before.times, after.times)
-  ) {
-    const { participantID, studyID, title } = after;
-    const participant = await getParticipant(participantID);
-    const study = await getDocument(firestore.collection("studies").doc(studyID));
+  const hasTitleChanged = before.title !== after.title;
+  const hasStartDateChanged = before.startDate !== after.startDate;
+  const hasEndDateChanged = before.endDate !== after.endDate;
+  const hasTimesChanged = !isArrayEqual(before.times, after.times);
 
-    const subject = "Researcher Updated Reminder!";
-    const text = `Study ${study.title} has updated your reminder called ${title}`;
+  if (hasTitleChanged || hasStartDateChanged || hasEndDateChanged || hasTimesChanged) {
+    const reminder = after;
 
-    if (participant?.notifications?.email) {
-      const user = await auth.getUser(participantID);
-      const participantEmail = user.email;
-      await sendEmail(
-        participantEmail,
-        subject,
-        `${text}: ${`https://studyfind.org/mystudies/${studyID}/reminders/`}\n To unsubscribe from these notifications, please visit: https://studyfind.org/account/notifications/`
-      );
-    }
+    const studyRef = firestore.collection("studies").doc(reminder.studyID);
+    const participantRef = firestore.collection("participants").doc(reminder.participantID);
 
-    if (participant?.notifications?.phone) {
-      const participantPhone = participant.phone;
-      participantPhone &&
-        /\d\d\d\d\d\d\d\d\d\d/.test(participantPhone) &&
-        (await sendPhone(
-          `+1${participantPhone}`,
-          `${text}: ${`https://studyfind.org/mystudies/${studyID}/reminders/`}\n To unsubscribe visit: https://studyfind.org/account/notifications/`
-        ));
-    }
+    const [study, participant] = await Promise.allSettled([
+      getDocument(studyRef),
+      getDocument(participantRef),
+    ]);
 
-    addParticipantNotification(
-      participantID,
-      RESEARCHER_UPDATED_REMINDER,
-      subject,
-      text,
-      `/mystudies/${studyID}/reminders/`
-    );
+    const notificationDetails = {
+      code: RESEARCHER_UPDATED_REMINDER,
+      title: "Reminder Updated",
+      description: `${study.researcher.name} has updated the reminder titled "${reminder.title}"`,
+      link: `https://studyfind.org/your-studies/${reminder.studyID}/reminders`,
+    };
+
+    sendNotification(participant, "participant", notificationDetails);
   }
 
-  if (!before.confirmedByParticipant && after.confirmedByParticipant) {
-    const { participantID, researcherID, title, studyID } = after;
-    const studyParticipant = await getStudyParticipant(studyID, participantID);
-    const researcher = await getResearcher(researcherID);
+  const hasParticipantConfirmed = !before.confirmedByParticipant && after.confirmedByParticipant;
 
-    const subject = "Participant Confirmed Reminder!";
-    const text = `${studyParticipant.fakename} (${participantID}) confirmed reminder ${title}`;
+  if (hasParticipantConfirmed) {
+    const reminder = after;
 
-    if (researcher?.notifications?.email) {
-      const user = await auth.getUser(researcherID);
-      const researcherEmail = user.email;
-      await sendEmail(
-        researcherEmail,
-        subject,
-        `${text}: ${`https://studyfind-researcher.firebaseapp.com/study/${studyID}/participants/reminders/${participantID}/`}\n To unsubscribe from these notifications, please visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
-      );
-    }
-
-    if (researcher?.notifications?.phone) {
-      const researcherPhone = researcher.phone;
-      researcherPhone &&
-        /\d\d\d\d\d\d\d\d\d\d/.test(researcherPhone) &&
-        (await sendPhone(
-          `+1${researcherPhone}`,
-          `${text}: ${`https://studyfind-researcher.firebaseapp.com/study/${studyID}/participants/reminders/${participantID}/`}\n To unsubscribe visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
-        ));
-    }
-
-    addResearcherNotification(
-      researcherID,
-      PARTICIPANT_CONFIRMED_REMINDER,
-      subject,
-      text,
-      `/study/${studyID}/participants/reminders/${participantID}/`
+    const researcher = await getDocument(
+      firestore.collection("researchers").doc(reminder.researcherID)
     );
+
+    const notificationDetails = {
+      code: PARTICIPANT_CONFIRMED_REMINDER,
+      title: "Reminder Updated",
+      description: `Participant ${reminder.participantID} has confirmed your reminder titled "${reminder.name}"`,
+      link: `https://researcher.studyfind.org/study/${reminder.studyID}/participants/${reminder.participantID}/reminders`,
+    };
+
+    sendNotification(researcher, "researcher", notificationDetails);
   }
 };

@@ -3,12 +3,10 @@ const { auth } = require("admin");
 const { firestore } = require("admin");
 const { getDocument, getCollection } = require("utils");
 const { MEETING_NOW } = require("../__utils__/notification-codes");
-const { addParticipantNotification, addResearcherNotification } = require("../__utils__/database");
-const sendEmail = require("../__utils__/send-email");
-const sendPhone = require("../__utils__/send-phone");
+const sendNotification = require("notifications/__utils__/send-notification");
 
 const getCurrentTimeRoundedTo30Minutes = () => {
-  const MILLIS_UTC_NOW = Date.now();
+  const MILLIS_UTC_NOW = moment().utc().valueOf();
   const MILLIS_IN_30_MINS = 1800000;
   return MILLIS_IN_30_MINS + Math.floor(MILLIS_UTC_NOW / MILLIS_IN_30_MINS) * MILLIS_IN_30_MINS;
 };
@@ -34,7 +32,8 @@ module.exports = async () => {
       const studyParticipantRef = firestore
         .collection("studies")
         .doc(studyID)
-        .participants(participantID);
+        .collection("participants")
+        .doc(participantID);
 
       const [researcher, participant, studyParticipant, researcherUser] = await Promise.all([
         getDocument(researcherRef),
@@ -48,66 +47,27 @@ module.exports = async () => {
       if (!researcher) throw Error(`Referenced researcher ${researcherID} does not exist`);
       if (!participant) throw Error(`Referenced participant ${participantID} does not exist`);
 
-      const participantSubject = `Upcoming Meeting`;
-      const participantText = `You have a meeting with ${researcherUser.displayName} in 30 minutes`;
-      const researcherSubject = `Upcoming Meeting`;
-      const researcherText = `Your meeting with ${participantFakename} from study ${studyID} is in 30 minutes`;
+      const participantTime = moment(roundedTime).tz(participant.timezone).format("h:mma");
+      const researcherTime = moment(roundedTime).tz(researcher.timezone).format("h:mma");
 
-      if (participant.notifications?.email) {
-        const user = await auth.getUser(participantID);
-        const participantEmail = user.email;
-        await sendEmail(
-          participantEmail,
-          participantSubject,
-          `${participantText}: ${link}\n To unsubscribe from these notifications, please visit: https://studyfind.org/account/notifications/`
-        );
-      }
+      const researcherNotificationDetails = {
+        code: MEETING_NOW,
+        title: `Meeting "${meeting.name}" at ${researcherTime}`,
+        description: `You have a upcoming meeting titled with participant ${participantFakename} for study ${studyID} in 30 minutes`,
+        link: meeting.link,
+      };
 
-      if (participant.notifications?.phone) {
-        const participantPhone = participant.phone;
-        participantPhone &&
-          /\d\d\d\d\d\d\d\d\d\d/.test(participantPhone) &&
-          (await sendPhone(
-            `+1${participantPhone}`,
-            `${participantText}: ${link}\n To unsubscribe visit: https://studyfind.org/account/notifications/`
-          ));
-      }
+      const participantNotificationDetails = {
+        code: MEETING_NOW,
+        title: `Meeting "${meeting.name}" at ${participantTime}`,
+        description: `You have a upcoming meeting with participant ${participantFakename} for study ${studyID} in 30 minutes`,
+        link: meeting.link,
+      };
 
-      if (researcher.notifications?.email) {
-        const researcherEmail = researcherUser.email;
-        await sendEmail(
-          researcherEmail,
-          researcherSubject,
-          `${researcherText}: ${link}\n To unsubscribe from these notifications, please visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
-        );
-      }
-
-      if (researcher.notifications?.phone) {
-        const researcherPhone = researcher.phone;
-        researcherPhone &&
-          /\d\d\d\d\d\d\d\d\d\d/.test(researcherPhone) &&
-          (await sendPhone(
-            `+1${researcherPhone}`,
-            `${researcherText}: ${link}\n To unsubscribe visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
-          ));
-      }
-
-      await Promise.all(
-        addParticipantNotification(
-          participantID,
-          MEETING_NOW,
-          participantSubject,
-          participantText,
-          link
-        ),
-        addResearcherNotification(
-          researcherID,
-          MEETING_NOW,
-          researcherSubject,
-          researcherText,
-          link
-        )
-      );
+      await Promise.all([
+        sendNotification(researcher, "researcher", researcherNotificationDetails),
+        sendNotification(participant, "participant", participantNotificationDetails),
+      ]);
     })
   );
 };

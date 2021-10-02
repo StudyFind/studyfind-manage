@@ -1,36 +1,22 @@
-const { auth } = require("admin");
+const { firestore } = require("admin");
+const { getDocument } = require("utils");
 const { DELETE_STUDY } = require("../../__utils__/notification-codes");
-const { getResearcher, addResearcherNotification } = require("../../__utils__/database");
-const sendEmail = require("../../__utils__/send-email");
-const sendPhone = require("../../__utils__/send-phone");
+
+const sendNotification = require("../../__utils__/send-notification");
 
 module.exports = async (snapshot) => {
   const study = snapshot.data();
+
   const researcherID = study.researcher.id;
-  const researcher = await getResearcher(researcherID);
 
-  const subject = "Study Deleted!";
-  const text = `${study.title} has been deleted.`;
+  const researcher = await getDocument(firestore.collection("researchers").doc(researcherID));
 
-  if (researcher?.notifications?.email) {
-    const user = await auth.getUser(researcherID);
-    const researcherEmail = user.email;
-    await sendEmail(
-      researcherEmail,
-      subject,
-      `${text}\n To unsubscribe from these notifications, please visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
-    );
-  }
+  const notificationDetails = {
+    code: DELETE_STUDY,
+    title: "Study Deleted",
+    description: `Your study titled "${study.title}" has been deleted`,
+    link: `https://researcher.studyfind.org/create`,
+  };
 
-  if (researcher?.notifications?.phone) {
-    const researcherPhone = researcher.phone;
-    researcherPhone &&
-      /\d\d\d\d\d\d\d\d\d\d/.test(researcherPhone) &&
-      (await sendPhone(
-        `+1${researcherPhone}`,
-        `${text}\n To unsubscribe visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
-      ));
-  }
-
-  return addResearcherNotification(researcherID, DELETE_STUDY, subject, text);
+  sendNotification(researcher, "researcher", notificationDetails);
 };

@@ -4,9 +4,7 @@ const moment = require("moment-timezone");
 const { firestore } = require("admin");
 const { getDocument, getCollection } = require("utils");
 const { REMINDER_NOW } = require("../__utils__/notification-codes");
-const { addParticipantNotification } = require("../__utils__/database");
-const sendEmail = require("../__utils__/send-email");
-const sendPhone = require("../__utils__/send-phone");
+const sendNotification = require("notifications/__utils__/send-notification");
 
 const getWeeklyOffset = (time) => {
   const MILLIS_IN_WEEK = 604800000;
@@ -20,7 +18,7 @@ const forEachTimezone = async (fn) => {
   return Promise.allSettled(
     timezones.map(({ name, offset }) => {
       const offsetInMilliseconds = offset * 60 * 1000;
-      const timezoneTime = Date.now() + offsetInMilliseconds;
+      const timezoneTime = moment().utc().valueOf() + offsetInMilliseconds;
       const timezoneDate = moment(timezoneTime).tz(name).format("YYYY-MM-DD");
       return fn(timezoneTime, timezoneDate, name);
     })
@@ -42,32 +40,15 @@ module.exports = async () => {
         const participantRef = firestore.collection("participants").doc(reminder.participantID);
         const participant = await getDocument(participantRef);
 
-        if (participant.timezone === timezoneName) {
-          const subject = `${reminder.title}`;
-          const text = `This is a reminder for study ${reminder.studyID}.`;
-
-          if (participant.notifications?.email) {
-            const user = await auth.getUser(reminder.participantID);
-            const participantEmail = user.email;
-            await sendEmail(
-              participantEmail,
-              subject,
-              `${text}\n To unsubscribe from these notifications, please visit: https://studyfind.org/account/notifications/`
-            );
-          }
-
-          if (participant.notifications?.phone) {
-            const participantPhone = participant.phone;
-            participantPhone &&
-              /\d\d\d\d\d\d\d\d\d\d/.test(participantPhone) &&
-              (await sendPhone(
-                `+1${participantPhone}`,
-                `${subject}\n To unsubscribe visit: https://studyfind.org/account/notifications/`
-              ));
-          }
-
-          addParticipantNotification(reminder.participantID, REMINDER_NOW, subject, text);
-        }
+        return (
+          participant.timezone === timezoneName &&
+          sendNotification(participant, "participant", {
+            code: REMINDER_NOW,
+            title: reminder.title,
+            description: `This is a reminder set by the researcher to notify you. Click here to view the reminder details`,
+            link: `https://studyfind.org/your-studies/${reminder.studyID}/reminders`,
+          })
+        );
       })
     );
   });

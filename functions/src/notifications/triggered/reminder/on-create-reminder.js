@@ -1,43 +1,26 @@
-const { auth } = require("admin");
+const { firestore } = require("admin");
+const { getDocument } = require("utils");
 const { RESEARCHER_CREATED_REMINDER } = require("../../__utils__/notification-codes");
-const { getParticipant, addParticipantNotification } = require("../../__utils__/database");
-const sendEmail = require("../../__utils__/send-email");
-const sendPhone = require("../../__utils__/send-phone");
+
+const sendNotification = require("../../__utils__/send-notification");
 
 module.exports = async (snapshot) => {
   const reminder = snapshot.data();
-  const { participantID, researcherID, studyID, title } = reminder;
-  const participant = await getParticipant(participantID);
-  const researcherUser = await auth.getUser(researcherID);
 
-  const subject = "Researcher Created Reminder!";
-  const text = `${researcherUser.displayName} has set up a weekly reminder called ${title} for you.`;
+  const studyRef = firestore.collection("studies").doc(reminder.studyID);
+  const participantRef = firestore.collection("participants").doc(reminder.participantID);
 
-  if (participant?.notifications?.email) {
-    const user = await auth.getUser(participantID);
-    const participantEmail = user.email;
-    await sendEmail(
-      participantEmail,
-      subject,
-      `${text}: ${`https://studyfind.org/mystudies/${studyID}/reminders/`}\n To unsubscribe from these notifications, please visit: https://studyfind.org/account/notifications/`
-    );
-  }
+  const [study, participant] = await Promise.allSettled([
+    getDocument(studyRef),
+    getDocument(participantRef),
+  ]);
 
-  if (participant?.notifications?.phone) {
-    const participantPhone = participant.phone;
-    participantPhone &&
-      /\d\d\d\d\d\d\d\d\d\d/.test(participantPhone) &&
-      (await sendPhone(
-        `+1${participantPhone}`,
-        `${text}: ${`https://studyfind.org/mystudies/${studyID}/reminders/`}\n To unsubscribe visit: https://studyfind.org/account/notifications/`
-      ));
-  }
+  const notificationDetails = {
+    code: RESEARCHER_CREATED_REMINDER,
+    link: `https://studyfind.org/your-studies/${reminder.studyID}/reminders`,
+    title: "New Reminder",
+    description: `${study.researcher.name} has created the reminder titled "${reminder.title}" for you`,
+  };
 
-  return addParticipantNotification(
-    participantID,
-    RESEARCHER_CREATED_REMINDER,
-    subject,
-    text,
-    `/mystudies/${studyID}/reminders/`
-  );
+  sendNotification(participant, "participant", notificationDetails);
 };

@@ -1,40 +1,26 @@
-const { auth } = require("admin");
-const moment = require("moment");
+const { firestore } = require("admin");
+const { getDocument } = require("utils");
 const { RESEARCHER_DELETED_MEETING } = require("../../__utils__/notification-codes");
-const { getParticipant, addParticipantNotification } = require("../../__utils__/database");
-const sendEmail = require("../../__utils__/send-email");
-const sendPhone = require("../../__utils__/send-phone");
+
+const sendNotification = require("../../__utils__/send-notification");
 
 module.exports = async (snapshot) => {
   const meeting = snapshot.data();
-  const { participantID, researcherID, time } = meeting;
-  const participant = await getParticipant(participantID);
-  const researcherUser = await auth.getUser(researcherID);
 
-  const subject = "Researcher Canceled Meeting!";
-  const text = `Your meeting at ${moment(time)
-    .tz(participant.timezone.region)
-    .format("LLL")} with ${researcherUser.displayName} has been canceled.`;
+  const studyRef = firestore.collection("studies").doc(meeting.studyID);
+  const participantRef = firestore.collection("participants").doc(meeting.participantID);
 
-  if (participant?.notifications?.email) {
-    const user = await auth.getUser(participantID);
-    const participantEmail = user.email;
-    await sendEmail(
-      participantEmail,
-      subject,
-      `${text}\n To unsubscribe from these notifications, please visit: https://studyfind.org/account/notifications/`
-    );
-  }
+  const [study, participant] = await Promise.allSettled([
+    getDocument(studyRef),
+    getDocument(participantRef),
+  ]);
 
-  if (participant?.notifications?.phone) {
-    const participantPhone = participant.phone;
-    participantPhone &&
-      /\d\d\d\d\d\d\d\d\d\d/.test(participantPhone) &&
-      (await sendPhone(
-        `+1${participantPhone}`,
-        `${text}\n To unsubscribe visit: https://studyfind.org/account/notifications/`
-      ));
-  }
+  const notificationDetails = {
+    code: RESEARCHER_DELETED_MEETING,
+    link: `https://studyfind.org/your-studies/${meeting.studyID}/meetings`,
+    title: "Meeting Deleted",
+    description: `${study.researcher.name} has deleted the meeting titled "${meeting.name}"`,
+  };
 
-  return addParticipantNotification(participantID, RESEARCHER_DELETED_MEETING, subject, text);
+  sendNotification(participant, "participant", notificationDetails);
 };

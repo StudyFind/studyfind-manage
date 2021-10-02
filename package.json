@@ -6,6 +6,7 @@
     "@chakra-ui/react": "^1.6.0",
     "@emotion/react": "^11",
     "@emotion/styled": "^11",
+    "@signalwire/node": "^2.4.0",
     "@studyfind/components": "^1.0.5",
     "@studyfind/firebase": "^0.2.9",
     "@testing-library/jest-dom": "^5.11.4",

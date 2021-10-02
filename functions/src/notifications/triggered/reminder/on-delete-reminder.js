@@ -1,37 +1,26 @@
-const { auth } = require("admin");
+const { firestore } = require("admin");
+const { getDocument } = require("utils");
 const { RESEARCHER_DELETED_REMINDER } = require("../../__utils__/notification-codes");
-const { getParticipant, addParticipantNotification } = require("../../__utils__/database");
-const sendEmail = require("../../__utils__/send-email");
-const sendPhone = require("../../__utils__/send-phone");
+
+const sendNotification = require("../../__utils__/send-notification");
 
 module.exports = async (snapshot) => {
   const reminder = snapshot.data();
-  const { participantID, researcherID, title } = reminder;
-  const participant = await getParticipant(participantID);
-  const researcherUser = await auth.getUser(researcherID);
 
-  const subject = "Researcher Deleted Reminder";
-  const text = `${researcherUser.displayName} has deleted your weekly reminder called ${title}.`;
+  const studyRef = firestore.collection("studies").doc(reminder.studyID);
+  const participantRef = firestore.collection("participants").doc(reminder.participantID);
 
-  if (participant?.notifications?.email) {
-    const user = await auth.getUser(participantID);
-    const participantEmail = user.email;
-    await sendEmail(
-      participantEmail,
-      subject,
-      `${text}\n To unsubscribe from these notifications, please visit: https://studyfind.org/account/notifications/`
-    );
-  }
+  const [study, participant] = await Promise.allSettled([
+    getDocument(studyRef),
+    getDocument(participantRef),
+  ]);
 
-  if (participant?.notifications?.phone) {
-    const participantPhone = participant.phone;
-    participantPhone &&
-      /\d\d\d\d\d\d\d\d\d\d/.test(participantPhone) &&
-      (await sendPhone(
-        `+1${participantPhone}`,
-        `${text}\n To unsubscribe visit: https://studyfind.org/account/notifications/`
-      ));
-  }
+  const notificationDetails = {
+    code: RESEARCHER_DELETED_REMINDER,
+    link: `https://studyfind.org/your-studies/${reminder.studyID}/reminders`,
+    title: "Reminder Deleted",
+    description: `${study.researcher.name} has deleted the reminder titled "${reminder.title}"`,
+  };
 
-  return addParticipantNotification(participantID, RESEARCHER_DELETED_REMINDER, subject, text);
+  sendNotification(participant, "participant", notificationDetails);
 };

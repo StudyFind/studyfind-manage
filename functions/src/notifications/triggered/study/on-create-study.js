@@ -1,43 +1,23 @@
-const { auth } = require("admin");
+const { firestore } = require("admin");
+const { getDocument } = require("utils");
 const { CREATE_STUDY } = require("../../__utils__/notification-codes");
-const { getResearcher, addResearcherNotification } = require("../../__utils__/database");
-const sendEmail = require("../../__utils__/send-email");
-const sendPhone = require("../../__utils__/send-phone");
+
+const sendNotification = require("../../__utils__/send-notification");
 
 module.exports = async (snapshot) => {
-  const studyID = snapshot.id;
   const study = snapshot.data();
+
+  const studyID = snapshot.id;
   const researcherID = study.researcher.id;
-  const researcher = await getResearcher(researcherID);
 
-  const subject = "Study Created!";
-  const text = `${study.title} has been created`;
+  const researcher = await getDocument(firestore.collection("researchers").doc(researcherID));
 
-  if (researcher?.notifications?.email) {
-    const user = await auth.getUser(researcherID);
-    const researcherEmail = user.email;
-    await sendEmail(
-      researcherEmail,
-      subject,
-      `${text}: ${`https://studyfind-researcher.firebaseapp.com/study/${studyID}/details`}\n To unsubscribe from these notifications, please visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
-    );
-  }
+  const notificationDetails = {
+    code: CREATE_STUDY,
+    title: "Study Created",
+    description: `Your study titled "${study.title}" has been created`,
+    link: `https://researcher.studyfind.org/study/${studyID}/details`,
+  };
 
-  if (researcher?.notifications?.phone) {
-    const researcherPhone = researcher.phone;
-    researcherPhone &&
-      /\d\d\d\d\d\d\d\d\d\d/.test(researcherPhone) &&
-      (await sendPhone(
-        `+1${researcherPhone}`,
-        `${text}: ${`https://studyfind-researcher.firebaseapp.com/study/${studyID}/details`}\n To unsubscribe visit: https://studyfind-researcher.firebaseapp.com/account/notifications/`
-      ));
-  }
-
-  return addResearcherNotification(
-    researcherID,
-    CREATE_STUDY,
-    subject,
-    text,
-    `/study/${studyID}/details`
-  );
+  sendNotification(researcher, "researcher", notificationDetails);
 };
