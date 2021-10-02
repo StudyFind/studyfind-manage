@@ -1,7 +1,7 @@
 const { auth } = require("admin");
 
-const sendNotificationEmail = require("../../__utils__/send-notification-email");
-const sendNotificationPhone = require("../../__utils__/send-notification-phone");
+const sendNotificationEmail = require("./send-notification-email");
+const sendNotificationPhone = require("./send-notification-phone");
 const sendNotificationLocal = require("./send-notification-local");
 
 module.exports = async (userData, userType, notificationDetails) => {
