@@ -2,8 +2,9 @@ const moment = require("moment-timezone");
 
 const { firestore } = require("admin");
 const { getDocument, getCollection } = require("utils");
+const { REMINDER_NOW } = require("../__utils__/notification-codes");
 
-const { REMINDER } = require("../__utils__/notification-codes");
+const sendNotification = require("notifications/__utils__/send-notification");
 
 const getWeeklyOffset = (time) => {
   const MILLIS_IN_WEEK = 604800000;
@@ -17,7 +18,7 @@ const forEachTimezone = async (fn) => {
   return Promise.allSettled(
     timezones.map(({ name, offset }) => {
       const offsetInMilliseconds = offset * 60 * 1000;
-      const timezoneTime = Date.now() + offsetInMilliseconds;
+      const timezoneTime = moment().utc().valueOf() + offsetInMilliseconds;
       const timezoneDate = moment(timezoneTime).tz(name).format("YYYY-MM-DD");
       return fn(timezoneTime, timezoneDate, name);
     })
@@ -41,10 +42,11 @@ module.exports = async () => {
 
         return (
           participant.timezone === timezoneName &&
-          participantRef.collection("notifications").add({
-            time: Date.now(),
-            code: REMINDER,
-            meta: { title: reminder.title },
+          sendNotification(participant, "participant", {
+            code: REMINDER_NOW,
+            title: reminder.title,
+            description: `This is a reminder set by the researcher to notify you. Click here to view the reminder details`,
+            link: `https://studyfind.org/your-studies/${reminder.studyID}/reminders`,
           })
         );
       })

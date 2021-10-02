@@ -1,23 +1,26 @@
-const onTriggerMeeting = require("./on-trigger-meeting");
-module.exports = async (snapshot) => onTriggerMeeting(snapshot, "DELETE_MEETING");
+const { firestore } = require("admin");
+const { getDocument } = require("utils");
+const { RESEARCHER_DELETED_MEETING } = require("../../__utils__/notification-codes");
 
-/*
+const sendNotification = require("../../__utils__/send-notification");
 
-Participant
------------
-title: "Meeting Deleted"
-body: `The researcher from study ${meta.meeting.studyID} has deleted a meeting with you at ${moment(meta.meeting.time).format("LLL")}`
-icon: FaCalendarTimes
-color: "red.500"
-background: "red.100"
-link: "https://researcher.studyfind.org/study/${studyID}/participant/${participantID}"
+module.exports = async (snapshot) => {
+  const meeting = snapshot.data();
 
-Researcher
-----------
-title: "Meeting Deleted"
-body: `You deleted a meeting with participant ${meta.studyParticipant.fakename} for study ${meta.meeting.studyID} at ${moment(meta.meeting.time).format("LLL")}`
-icon: FaCalendarTimes
-color: "red.500"
-background: "red.100"
+  const studyRef = firestore.collection("studies").doc(meeting.studyID);
+  const participantRef = firestore.collection("participants").doc(meeting.participantID);
 
-*/
+  const [study, participant] = await Promise.allSettled([
+    getDocument(studyRef),
+    getDocument(participantRef),
+  ]);
+
+  const notificationDetails = {
+    code: RESEARCHER_DELETED_MEETING,
+    link: `https://studyfind.org/your-studies/${meeting.studyID}/meetings`,
+    title: "Meeting Deleted",
+    description: `${study.researcher.name} has deleted the meeting titled "${meeting.name}"`,
+  };
+
+  sendNotification(participant, "participant", notificationDetails);
+};

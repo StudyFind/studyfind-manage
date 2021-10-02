@@ -1,22 +1,26 @@
-const onTriggerReminder = require("./on-trigger-reminder");
-module.exports = async (snapshot) => onTriggerReminder(snapshot, "DELETE_REMINDER");
+const { firestore } = require("admin");
+const { getDocument } = require("utils");
+const { RESEARCHER_DELETED_REMINDER } = require("../../__utils__/notification-codes");
 
-/*
+const sendNotification = require("../../__utils__/send-notification");
 
-Participant
------------
-title: "Reminder Deleted"
-body: `The researcher from study ${meta.reminder.studyID} has deleted the weekly reminder titled ${meta.reminder.title}`
-icon: FaClock
-color: "red.500"
-background: "red.100"
+module.exports = async (snapshot) => {
+  const reminder = snapshot.data();
 
-Researcher
-----------
-title: "Reminder Deleted"
-body: "You deleted a reminder for participant ${meta.studyParticipant.fakename} for study ${meta.reminder.studyID} titled ${meta.reminder.title}`
-icon: FaClock
-color: "red.500"
-background: "red.100"
+  const studyRef = firestore.collection("studies").doc(reminder.studyID);
+  const participantRef = firestore.collection("participants").doc(reminder.participantID);
 
-*/
+  const [study, participant] = await Promise.allSettled([
+    getDocument(studyRef),
+    getDocument(participantRef),
+  ]);
+
+  const notificationDetails = {
+    code: RESEARCHER_DELETED_REMINDER,
+    link: `https://studyfind.org/your-studies/${reminder.studyID}/reminders`,
+    title: "Reminder Deleted",
+    description: `${study.researcher.name} has deleted the reminder titled "${reminder.title}"`,
+  };
+
+  sendNotification(participant, "participant", notificationDetails);
+};

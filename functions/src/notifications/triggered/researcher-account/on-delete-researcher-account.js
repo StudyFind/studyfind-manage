@@ -1,1 +1,0 @@
-// TODO: Send goodbye email

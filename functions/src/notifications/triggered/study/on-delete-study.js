@@ -1,14 +1,22 @@
-const onTriggerStudy = require("./on-trigger-study");
-module.exports = async (snapshot) => onTriggerStudy(snapshot, "CREATE_STUDY");
+const { firestore } = require("admin");
+const { getDocument } = require("utils");
+const { DELETE_STUDY } = require("../../__utils__/notification-codes");
 
-/*
+const sendNotification = require("../../__utils__/send-notification");
 
-Researcher
-----------
-title: "Study Deleted"
-body: "You deleted study ${meta.study.id}`
-icon: FiFileMinus
-color: "red.500"
-background: "red.100"
+module.exports = async (snapshot) => {
+  const study = snapshot.data();
 
-*/
+  const researcherID = study.researcher.id;
+
+  const researcher = await getDocument(firestore.collection("researchers").doc(researcherID));
+
+  const notificationDetails = {
+    code: DELETE_STUDY,
+    title: "Study Deleted",
+    description: `Your study titled "${study.title}" has been deleted`,
+    link: `https://researcher.studyfind.org/create`,
+  };
+
+  sendNotification(researcher, "researcher", notificationDetails);
+};
