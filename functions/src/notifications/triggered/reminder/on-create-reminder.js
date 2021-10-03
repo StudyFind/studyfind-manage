@@ -22,5 +22,5 @@ module.exports = async (snapshot) => {
     description: `${study.researcher.name} has created the reminder titled "${reminder.title}" for you`,
   };
 
-  sendNotification(participant, "participant", notificationDetails);
+  return sendNotification(participant, "participant", notificationDetails);
 };

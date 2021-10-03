@@ -22,5 +22,5 @@ module.exports = async (snapshot) => {
     description: `${study.researcher.name} has deleted the meeting titled "${meeting.name}"`,
   };
 
-  sendNotification(participant, "participant", notificationDetails);
+  return sendNotification(participant, "participant", notificationDetails);
 };

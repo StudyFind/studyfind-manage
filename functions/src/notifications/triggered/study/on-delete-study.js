@@ -18,5 +18,5 @@ module.exports = async (snapshot) => {
     link: `https://researcher.studyfind.org/create`,
   };
 
-  sendNotification(researcher, "researcher", notificationDetails);
+  return sendNotification(researcher, "researcher", notificationDetails);
 };

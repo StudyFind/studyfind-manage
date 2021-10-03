@@ -20,5 +20,5 @@ module.exports = async (snapshot) => {
     The StudyFind Team
   `;
 
-  sendEmail(participantEmail, goodbyeEmailSubject, goodbyeEmailBody);
+  return sendEmail(participantEmail, goodbyeEmailSubject, goodbyeEmailBody);
 };

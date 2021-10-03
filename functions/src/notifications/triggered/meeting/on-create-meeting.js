@@ -28,5 +28,5 @@ module.exports = async (snapshot) => {
       .zoneAbbr()})`,
   };
 
-  sendNotification(participant, "participant", notificationDetails);
+  return sendNotification(participant, "participant", notificationDetails);
 };
