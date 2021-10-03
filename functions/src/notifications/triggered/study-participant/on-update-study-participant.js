@@ -20,6 +20,6 @@ module.exports = async (change, context) => {
       link: `https://studyfind.org/your-studies`,
     };
 
-    sendNotification(participant, "participant", notificationDetails);
+    return sendNotification(participant, "participant", notificationDetails);
   }
 };

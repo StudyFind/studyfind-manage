@@ -1,5 +1,6 @@
 const { firestore } = require("admin");
 const { getDocument } = require("utils");
+
 const {
   RESEARCHER_UPDATED_REMINDER,
   PARTICIPANT_CONFIRMED_REMINDER,
@@ -38,7 +39,7 @@ module.exports = async (change) => {
       link: `https://studyfind.org/your-studies/${reminder.studyID}/reminders`,
     };
 
-    sendNotification(participant, "participant", notificationDetails);
+    return sendNotification(participant, "participant", notificationDetails);
   }
 
   const hasParticipantConfirmed = !before.confirmedByParticipant && after.confirmedByParticipant;
@@ -57,6 +58,6 @@ module.exports = async (change) => {
       link: `https://researcher.studyfind.org/study/${reminder.studyID}/participants/${reminder.participantID}/reminders`,
     };
 
-    sendNotification(researcher, "researcher", notificationDetails);
+    return sendNotification(researcher, "researcher", notificationDetails);
   }
 };

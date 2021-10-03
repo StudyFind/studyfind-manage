@@ -1,8 +1,7 @@
-const moment = require("moment-timezone");
+const { auth } = require("admin");
 
 const { firestore } = require("admin");
 const { getDocument, getCollection } = require("utils");
-
 const { MEETING_NOW } = require("../__utils__/notification-codes");
 const sendNotification = require("notifications/__utils__/send-notification");
 
@@ -26,7 +25,7 @@ module.exports = async () => {
 
   return Promise.allSettled(
     meetings.map(async (meeting) => {
-      const { studyID, researcherID, participantID } = meeting;
+      const { studyID, researcherID, participantID, link } = meeting;
 
       const researcherRef = firestore.collection("researchers").doc(researcherID);
       const participantRef = firestore.collection("participants").doc(participantID);
@@ -36,10 +35,11 @@ module.exports = async () => {
         .collection("participants")
         .doc(participantID);
 
-      const [researcher, participant, studyParticipant] = await Promise.all([
+      const [researcher, participant, studyParticipant, researcherUser] = await Promise.all([
         getDocument(researcherRef),
         getDocument(participantRef),
         getDocument(studyParticipantRef),
+        auth.getUser(researcherID),
       ]);
 
       const participantFakename = studyParticipant.fakename;

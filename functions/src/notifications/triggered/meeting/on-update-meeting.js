@@ -4,7 +4,6 @@ const {
   RESEARCHER_UPDATED_MEETING,
   PARTICIPANT_CONFIRMED_MEETING,
 } = require("../../__utils__/notification-codes");
-
 const sendNotification = require("../../__utils__/send-notification");
 
 module.exports = async (change) => {
@@ -35,7 +34,7 @@ module.exports = async (change) => {
       description: `${study.researcher.name} has updated the meeting titled "${meeting.name}"`,
     };
 
-    sendNotification(participant, "participant", notificationDetails);
+    return sendNotification(participant, "participant", notificationDetails);
   }
 
   // RESEARCHER
@@ -56,6 +55,6 @@ module.exports = async (change) => {
       link: `https://researcher.studyfind.org/study/${meeting.studyID}/participants/${meeting.participantID}/meetings`,
     };
 
-    sendNotification(researcher, "researcher", notificationDetails);
+    return sendNotification(researcher, "researcher", notificationDetails);
   }
 };

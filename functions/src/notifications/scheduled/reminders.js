@@ -1,9 +1,9 @@
+const { auth } = require("admin");
 const moment = require("moment-timezone");
 
 const { firestore } = require("admin");
 const { getDocument, getCollection } = require("utils");
 const { REMINDER_NOW } = require("../__utils__/notification-codes");
-
 const sendNotification = require("notifications/__utils__/send-notification");
 
 const getWeeklyOffset = (time) => {
